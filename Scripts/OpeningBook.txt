@@ -1,0 +1,11 @@
+// with thanks to the chess wiki: https://en.wikibooks.org/wiki/Chess_Opening_Theory/1._e4
+
+rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq
+// sicilian opening
+c7c5
+// ruy lopez
+e7e5
+// french defense
+e7e6
+// caro kann defense
+c7c6

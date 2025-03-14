@@ -1,0 +1,342 @@
+using System.Collections;
+
+namespace Chess_Application;
+
+public class MinimaxPruningBot : Player
+{
+    public float delay { get; set; } = 0;
+    private int depth;
+    private bool maximisingPlayer;
+    private GameManager gameManager;
+    private const int pawnValue = 100;
+    private const int knightValue = 325;
+    private const int bishopValue = 340;
+    private const int rookValue = 500;
+    private const int queenValue = 900;
+
+    private Move bestMove = Move.NullMove;
+    private int bestEvaluation = 0;
+
+    private const int positiveInfinity = 99999999;
+    private const int negativeInfinity = -positiveInfinity;
+
+    public MinimaxPruningBot(Board board, Func<Move[]> UpdatePiecesAndGetMoves, Team team, GameManager gameManager, int depth) : base(board, UpdatePiecesAndGetMoves, team) {
+        this.gameManager = gameManager;
+        this.depth = depth;
+    }
+
+    
+    public override void Update() {
+        StartAlgorithm();
+    }
+
+    private void StartAlgorithm() {
+        Search(depth, negativeInfinity, positiveInfinity);
+        // Move[] moves = UpdatePiecesAndGetMoves.Invoke();
+        Console.WriteLine(bestMove);
+        if (!bestMove.isNullMove) {
+            board.MakeMove(bestMove);
+        }
+        // the move hasn't been set so just choose the first move in the array for the team and play it
+        else {
+            Move[] moves = UpdatePiecesAndGetMoves.Invoke();
+            if (!moves.Any()) {
+                gameManager.NoMovesAvailable(board.GetTeamsKing(gameManager.activeTeam));
+                return;
+            }
+            board.MakeMove(moves[0]);
+        }
+        bestEvaluation = 0;
+        bestMove = Move.NullMove;
+        Console.WriteLine("Finished AI turn");
+        // Debug.Break();
+    }
+
+    private int Search(int depth, int alpha, int beta, bool isMaximising) {
+        if (depth == 0) {
+            // Debug.Log(gameManager.currTeam + " team:  " + StaticEvaluation());
+            return StaticEvaluation(isMaximising);
+        }
+
+        Move[] moves = UpdatePiecesAndGetMoves.Invoke();
+        // King king = board.GetTeamsKing();
+        King TeamsKing = board.GetTeamsKing(gameManager.activeTeam);
+
+        if (!moves.Any()) {
+            if (TeamsKing.isChecked) {
+                if (isMaximising)
+                    return -(100000 - -depth);
+                else 
+                    return 100000 - -depth;
+            }
+            return 0;
+        }
+
+        if (isMaximising) {
+            int bestScore = int.MinValue;
+            foreach (Move move in moves) {
+                board.MakeMove(move);
+                int evaluation = Search(depth - 1, alpha, beta, false);
+                board.UndoMove();
+                alpha = Math.Max(alpha, bestScore);
+                if (this.depth == depth) {
+                    Console.WriteLine($"the move {move} has an evaluation of {evaluation}");
+                }
+                if (evaluation > bestScore) {
+                    bestScore = evaluation;
+
+                    if (depth == this.depth) {
+                        bestMove = move;
+                        bestEvaluation = evaluation;
+                    }
+                }
+                if (beta <= alpha) {
+                    break;
+                }
+            }
+            return bestScore;
+        }
+        else if (!isMaximising) {
+            int bestScore = int.MaxValue;
+            foreach (Move move in moves) {
+                board.MakeMove(move);
+                int evaluation = Search(depth - 1, alpha, beta, true);
+                board.UndoMove();
+                beta = Math.Min(beta, bestScore);
+
+                if (evaluation < bestScore) {
+                    bestScore = evaluation;
+
+                    if (depth == this.depth) {
+                        bestMove = move;
+                        bestEvaluation = evaluation;
+                    }
+                }
+                if (beta <= alpha) break;
+            }
+            return bestScore;
+        }
+
+        return 0;
+    }
+
+    private int Search(int depth, int alpha, int beta) {
+        if (depth == 0) {
+            // Debug.Log(StaticEvaluation());
+            return StaticEvaluation();
+        }
+        King teamsKing = board.GetTeamsKing(gameManager.activeTeam);
+        Move[] moves = UpdatePiecesAndGetMoves();
+        if (!moves.Any()) {
+            if (teamsKing.isChecked) {
+                // returning it as minus since it needs to reflect the current team and its a terrible position
+                // it also needs subtracting by the depth to ensure that the bot checkmates in the fewest moves
+                // Console.WriteLine($"Found checkmate in {this.depth - depth} moves");
+                // board.PrintBoard();
+                return -(100000 - -depth);
+            }
+            return 0;
+        }
+
+        foreach (Move move in moves) {
+            board.MakeMove(move);
+            int evaluation = -Search(depth - 1, -beta, -alpha);
+            board.UndoMove();
+
+            if (evaluation >= beta) {
+                return beta;
+            }
+            if (evaluation > alpha) {
+                alpha = evaluation;
+
+                if (depth == this.depth) {
+                    bestMove = move;
+                }
+            }
+        }
+        return alpha;
+    }
+
+    private int StaticEvaluation() {
+        // getting the pieces of the teams
+        // PiecesRemaining whitePiecesRemaining = board.GetTeamsPieces(Team.Black);
+        // PiecesRemaining blackPiecesRemaining = board.GetTeamsPieces(Team.Black);
+        int whiteEvaluation = Evaluate(Team.White, Team.Black);
+        int blackEvaluation = Evaluate(Team.Black, Team.White);
+
+        int overallEvaluation = whiteEvaluation - blackEvaluation;
+
+        int perspective = gameManager.activeTeam == Team.White ? 1 : -1;
+        return overallEvaluation * perspective;
+    }
+
+    private int StaticEvaluation(bool maximisingPlayer) {
+        // getting the pieces of the teams
+        // PiecesRemaining whitePiecesRemaining = board.GetTeamsPieces(Team.Black);
+        // PiecesRemaining blackPiecesRemaining = board.GetTeamsPieces(Team.Black);
+        int whiteEvaluation = Evaluate(Team.White, Team.Black);
+        int blackEvaluation = Evaluate(Team.Black, Team.White);
+
+        int overallEvaluation;
+        if (maximisingPlayer)
+            overallEvaluation = blackEvaluation - whiteEvaluation;
+        else
+            overallEvaluation = whiteEvaluation - blackEvaluation;
+        
+        return overallEvaluation;
+    }
+
+    private int Evaluate(Team team, Team opposingTeam) {
+        
+        int score = 0;
+
+        ulong teamPawnBitboard = board.GetPieceBitboard<Pawn>(team);
+        ulong teamBishopBitboard = board.GetPieceBitboard<Bishop>(team);
+        ulong teamKnightBitboard = board.GetPieceBitboard<Knight>(team);
+        ulong teamRookBitboard = board.GetPieceBitboard<Rook>(team);
+        ulong teamQueenBitboard = board.GetPieceBitboard<Queen>(team);
+        // ulong teamsKingBitboard = board.GetPieceBitboard<King>(team);
+
+        ulong opponentPawnBitboard = board.GetPieceBitboard<Pawn>(opposingTeam);
+        ulong opponentBishopBitboard = board.GetPieceBitboard<Bishop>(opposingTeam);
+        ulong opponentKnightBitboard = board.GetPieceBitboard<Knight>(opposingTeam);
+        ulong opponentRookBitboard = board.GetPieceBitboard<Rook>(opposingTeam);
+        ulong opponentQueenBitboard = board.GetPieceBitboard<Queen>(opposingTeam);
+
+        score += BitboardHelper.GetPieceCount(teamPawnBitboard) * pawnValue;
+        score += BitboardHelper.GetPieceCount(teamBishopBitboard) * bishopValue;
+        score += BitboardHelper.GetPieceCount(teamKnightBitboard) * knightValue;
+        score += BitboardHelper.GetPieceCount(teamRookBitboard) * rookValue;
+        score += BitboardHelper.GetPieceCount(teamQueenBitboard) * queenValue;
+
+        // ulong teamPawnBitboard = board.GetPieceBitboard<Pawn>(team);
+        // ulong opposingPawnBitboard = board.GetPieceBitboard<Pawn>(opposingTeam);
+
+        // ulong teamRookBitboard = board.GetPieceBitboard<Rook>(team);
+
+        ulong fileMask = 0b0000000100000001000000010000000100000001000000010000000100000001;
+        ulong rankMask = 0b11111111;
+        for (int i = 0; i < Board.dimensions; i++) {
+            ulong shiftedRankMask = rankMask << (i * Board.dimensions);
+            ulong shiftedFileMask = fileMask << i;
+            
+            int numPawnsOnFile = BitboardHelper.GetPieceCount(teamPawnBitboard, fileMask);
+            if (numPawnsOnFile > 0) {
+                score += GetPawnScore(teamPawnBitboard, opponentPawnBitboard, fileMask, numPawnsOnFile, i);
+            }
+
+            // handle reward for rooks being on the same rank
+            int numRooksOnSameFile = BitboardHelper.GetPieceCount(teamRookBitboard, shiftedFileMask);
+            if (numRooksOnSameFile >= 2) {
+                int sameRankRooksReward = 15;
+                score += sameRankRooksReward;
+
+                // add more reward if there are no pawns on the file
+                if (numPawnsOnFile == 0) {
+                    int rooksOnFileWithNoPawnsReward = 10;
+                    score += rooksOnFileWithNoPawnsReward;
+                }
+            }
+        }
+
+        int bishopCount = BitboardHelper.GetPieceCount(teamBishopBitboard);
+        if (bishopCount >= 2)
+            score += 50;
+
+        if (board.GetTeamsKing(opposingTeam).isChecked) {
+            score += 100;
+        }
+
+        return score;
+    }
+
+    private int GetPawnScore(ulong teamPawnBitboard, ulong opponentPawnBitboard, ulong fileMask, int numPawnsOnFile, int i) {
+        int score = 0;
+        // doubled pawns
+        if (numPawnsOnFile > 1) {
+            int stackedPawnPenalty = 7;
+            // the more pawns on the same file, the more penalty
+            score -= stackedPawnPenalty * numPawnsOnFile;
+        }
+
+        bool hasProtectivePawns = false;
+        if (i > 0) {
+            ulong leftFileMask = fileMask << (i - 1);
+            bool pawnIsOnLeftFile = (teamPawnBitboard & leftFileMask) != 0;
+            if (pawnIsOnLeftFile)
+                hasProtectivePawns = true;
+        }
+        if (i < Board.dimensions) {
+            ulong rightFileMask = fileMask << (i + 1);
+            bool pawnIsOnRightFile = (teamPawnBitboard & rightFileMask) != 0;
+            if (pawnIsOnRightFile)
+                hasProtectivePawns = true;
+        }
+
+        // subtract the score if the pawn is isolated
+        if (!hasProtectivePawns) {
+            int pawnIsolationPenalty = 2;
+            score -= pawnIsolationPenalty;
+        }
+
+        // the surrounding files of the current file, including the current file
+        // for example the file may be file C and then the mask will include file B, C, and D
+        ulong surroundingFilesMask = fileMask << i;
+        // adding the left file to the mask if it's inside the bounds
+        if (i > 0) {
+            surroundingFilesMask |= fileMask << (i - 1);
+        }
+        // adding the right file to the mask if it's inside the bounds
+        if (i < Board.dimensions) {
+            surroundingFilesMask |= fileMask << (i + 1);
+        }
+        int[] pawnSquareIndexes = BitboardHelper.GetSquareIndexesFromBitboard(teamPawnBitboard & (fileMask << i));
+        foreach (int pawnSquareIndex in pawnSquareIndexes) {
+            if (board.pieces[pawnSquareIndex] is not Pawn pawn) {
+                // if everything runs correctly, then this should never get executed
+                Console.WriteLine("Why is there a different piece in the pawn bitboard?");
+                Environment.Exit(0);
+                return 0;
+            }
+            Pawn.MovementDirection direction = pawn.direction;
+            (_, int pawnYIndex) = Board.ConvertSquareIndexToCoord(pawnSquareIndex);
+            // this section offsets the file mask so that instead of it being the whole file, it just keeps the squares infront of the pawn
+            // if it's the en passant pawn though, then we have to include the rank of the pawn because it can be captured on that rank
+            // e.g. assuming this is an upwards moving pawn:
+            /*  surrounding file mask       pawn position       resulting file mask     resulting file mask for en passant pawn
+                        1 1 1                   0 0 0               1 1 1                           1 1 1
+                        1 1 1                   0 0 0               1 1 1                           1 1 1
+                        1 1 1                   0 1 0               0 0 0                           1 1 1
+                        1 1 1                   0 0 0               0 0 0                           0 0 0
+                        1 1 1                   0 0 0               0 0 0                           0 0 0
+                        1 1 1                   0 0 0               0 0 0                           0 0 0
+                        1 1 1                   0 0 0               0 0 0                           0 0 0
+                        1 1 1                   0 0 0               0 0 0                           0 0 0
+            */
+            // for black it'd just select the squares below the pawn
+            bool pawnIsEnPassantPawn = board.PreviousStateAvailable && pawn == board.gameStates.Peek().pawnCapturableByEnPassant;
+            if (direction == Pawn.MovementDirection.MovingUpwards) {
+                int rankToShiftTo = pawnIsEnPassantPawn ? pawnYIndex : pawnYIndex + 1;
+                surroundingFilesMask <<= rankToShiftTo * Board.dimensions;
+            }
+            else if (direction == Pawn.MovementDirection.MovingDownwards) {
+                int rankToShiftTo = pawnIsEnPassantPawn ? Board.dimensions - (pawnYIndex + 1) : Board.dimensions - pawnYIndex;
+                surroundingFilesMask >>= rankToShiftTo * Board.dimensions;
+            }
+            bool opponentPawnsInMask = (opponentPawnBitboard & surroundingFilesMask) != 0;
+            if (!opponentPawnsInMask) {
+                // no opponent pawns on these squares so can give the evaluation a boost
+                int passedPawnRewardPerRank = 10;
+                if (direction == Pawn.MovementDirection.MovingUpwards) {
+                    // if the pawn is moving upwards and is on a higher rank, the higher the reward is
+                    score += passedPawnRewardPerRank * (pawnYIndex + 1);
+                }
+                else if (direction == Pawn.MovementDirection.MovingDownwards) {
+                    // if the pawn is moving downwards and is on a lower rank, the higher the reward is
+                    score += (passedPawnRewardPerRank * Board.dimensions) - passedPawnRewardPerRank * (pawnYIndex + 1);
+                }
+            }
+        }
+        return score;
+    }
+}
