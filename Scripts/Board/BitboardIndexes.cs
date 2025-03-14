@@ -1,4 +1,4 @@
-namespace Chess_Application;
+namespace Chess;
 
 public enum BitboardIndexes {
         PawnIndex = 0,

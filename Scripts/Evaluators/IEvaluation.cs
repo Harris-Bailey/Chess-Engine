@@ -1,4 +1,4 @@
-namespace Chess_Application;
+namespace Chess;
 
 public interface IEvaluation {
     int pawnValue { get; set; }

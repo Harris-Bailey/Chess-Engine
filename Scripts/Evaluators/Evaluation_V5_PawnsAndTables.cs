@@ -1,4 +1,4 @@
-namespace Chess_Application;
+namespace Chess;
 
 public class Evaluation_V5_PawnsAndTables : IEvaluation {
     public int pawnValue { get; set; } = 100;
@@ -19,9 +19,9 @@ public class Evaluation_V5_PawnsAndTables : IEvaluation {
         fileMask << 7,
     };
     
-    IPositionTables positionTables;
+    PositionTables positionTables;
     
-    public Evaluation_V5_PawnsAndTables(IPositionTables positionTables) {
+    public Evaluation_V5_PawnsAndTables(PositionTables positionTables) {
         this.positionTables = positionTables;
     }
 

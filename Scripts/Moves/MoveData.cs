@@ -1,4 +1,4 @@
-namespace Chess_Application;
+namespace Chess;
 
 public static class MoveData {
     
@@ -68,9 +68,6 @@ public static class MoveData {
                 if (targetCoord.x < 0 || targetCoord.x >= Board.dimensions | targetCoord.y < 0 || targetCoord.y >= Board.dimensions)
                     continue;
                 attacks |= 1ul << targetCoord.ConvertToSquareIndex();
-                // bool validCoord = targetCoord.x >= 0 && targetCoord.x < Board.dimensions && targetCoord.y >= 0 && targetCoord.y < Board.dimensions;
-                // int validCoordAsInt = validCoord.GetHashCode();
-                // attacks |= ((ulong)validCoordAsInt & 1ul) << targetCoord.ConvertToSquareIndex();
             }
             KnightAttacks[squareIndex] = attacks;
         }

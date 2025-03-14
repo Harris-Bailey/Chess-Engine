@@ -1,10 +1,8 @@
-namespace Chess_Application;
+namespace Chess;
 
-public class PeSTOPieceTables : IPositionTables {
-    
-    public int[][] AllPositionTables { get; set; }
-    
-    public int[] BlackPawnPositionTable { get; set; } = {
+public class PeSTOPieceTables : PositionTables {
+    // pawn positional score
+    public override sealed int[] BlackPawnPositionTable { get; protected set; } = {
           0,   0,   0,   0,   0,   0,  0,   0,
          98, 134,  61,  95,  68, 126, 34, -11,
          -6,   7,  26,  31,  65,  56, 25, -20,
@@ -16,7 +14,7 @@ public class PeSTOPieceTables : IPositionTables {
     };
     
     // knight positional score
-    public int[] BlackKnightPositionTable { get; set; } = {
+    public override sealed int[] BlackKnightPositionTable { get; protected set; } = {
         -167, -89, -34, -49,  61, -97, -15, -107,
          -73, -41,  72,  36,  23,  62,   7,  -17,
          -47,  60,  37,  65,  84, 129,  73,   44,
@@ -28,7 +26,7 @@ public class PeSTOPieceTables : IPositionTables {
     };
     
     // bishop positional score
-    public int[] BlackBishopPositionTable { get; set; } = {
+    public override sealed int[] BlackBishopPositionTable { get; protected set; } = {
         -29,   4, -82, -37, -25, -42,   7,  -8,
         -26,  16, -18, -13,  30,  59,  18, -47,
         -16,  37,  43,  40,  35,  50,  37,  -2,
@@ -40,7 +38,7 @@ public class PeSTOPieceTables : IPositionTables {
     };
     
     // rook positional score
-    public int[] BlackRookPositionTable { get; set; } = {
+    public override sealed int[] BlackRookPositionTable { get; protected set; } = {
          32,  42,  32,  51, 63,  9,  31,  43,
          27,  32,  58,  62, 80, 67,  26,  44,
          -5,  19,  26,  36, 17, 45,  61,  16,
@@ -53,7 +51,7 @@ public class PeSTOPieceTables : IPositionTables {
     };
     
     // queen positional score
-    public int[] BlackQueenPositionTable { get; set; } = {
+    public override sealed int[] BlackQueenPositionTable { get; protected set; } = {
         -28,   0,  29,  12,  59,  44,  43,  45,
         -24, -39,  -5,   1, -16,  57,  28,  54,
         -13, -17,   7,   8,  29,  56,  47,  57,
@@ -65,7 +63,7 @@ public class PeSTOPieceTables : IPositionTables {
     };
     
     // king positional score
-    public int[] BlackKingPositionTable { get; set; } = {
+    public override sealed int[] BlackKingPositionTable { get; protected set; } = {
         -65,  23,  16, -15, -56, -34,   2,  13,
          29,  -1, -20,  -7,  -8,  -4, -38, -29,
          -9,  24,   2, -16, -20,   6,  22, -22,
@@ -75,34 +73,4 @@ public class PeSTOPieceTables : IPositionTables {
           1,   7,  -8, -64, -43, -16,   9,   8,
         -15,  36,  12, -54,   8, -28,  24,  14,
     };
-    public int[] WhitePawnPositionTable { get; set; }
-    public int[] WhiteKnightPositionTable { get; set; }
-    public int[] WhiteBishopPositionTable { get; set; }
-    public int[] WhiteRookPositionTable { get; set; }
-    public int[] WhiteQueenPositionTable { get; set; }
-    public int[] WhiteKingPositionTable { get; set; }
-
-    public PeSTOPieceTables() {
-        WhitePawnPositionTable = BlackPawnPositionTable.GetFlippedArray();
-        WhiteKnightPositionTable = BlackKnightPositionTable.GetFlippedArray();
-        WhiteBishopPositionTable = BlackBishopPositionTable.GetFlippedArray();
-        WhiteRookPositionTable = BlackRookPositionTable.GetFlippedArray();
-        WhiteQueenPositionTable = BlackQueenPositionTable.GetFlippedArray();
-        WhiteKingPositionTable = BlackKingPositionTable.GetFlippedArray();
-        
-        AllPositionTables = new int[Board.NumPieces * Enum.GetValues(typeof(Team)).Length][];
-		AllPositionTables[(int)BitboardIndexes.PawnIndex * (int)Team.White] = WhitePawnPositionTable;
-		AllPositionTables[(int)BitboardIndexes.KnightIndex * (int)Team.White] = WhiteKnightPositionTable;
-		AllPositionTables[(int)BitboardIndexes.BishopIndex * (int)Team.White] = WhiteBishopPositionTable;
-		AllPositionTables[(int)BitboardIndexes.RookIndex * (int)Team.White] = WhiteRookPositionTable;
-		AllPositionTables[(int)BitboardIndexes.QueenIndex * (int)Team.White] = WhiteQueenPositionTable;
-		AllPositionTables[(int)BitboardIndexes.KingIndex * (int)Team.White] = WhiteKingPositionTable;
-		
-		AllPositionTables[(int)BitboardIndexes.PawnIndex * (int)Team.Black] = WhitePawnPositionTable;
-		AllPositionTables[(int)BitboardIndexes.KnightIndex * (int)Team.Black] = WhiteKnightPositionTable;
-		AllPositionTables[(int)BitboardIndexes.BishopIndex * (int)Team.Black] = WhiteBishopPositionTable;
-		AllPositionTables[(int)BitboardIndexes.RookIndex * (int)Team.Black] = WhiteRookPositionTable;
-		AllPositionTables[(int)BitboardIndexes.QueenIndex * (int)Team.Black] = WhiteQueenPositionTable;
-		AllPositionTables[(int)BitboardIndexes.KingIndex * (int)Team.Black] = WhiteKingPositionTable;
-    }
 }

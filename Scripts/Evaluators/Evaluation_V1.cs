@@ -1,6 +1,4 @@
-using System.Collections;
-
-namespace Chess_Application;
+namespace Chess;
 
 public class Evaluation_V1 : IEvaluation {
     public int pawnValue { get; set; } = 100;

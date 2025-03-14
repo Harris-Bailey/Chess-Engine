@@ -1,4 +1,4 @@
-namespace Chess_Application;
+namespace Chess;
 
 public class Evaluation_V4_PositionTables : IEvaluation {
     public int pawnValue { get; set; } = 100;
@@ -8,9 +8,9 @@ public class Evaluation_V4_PositionTables : IEvaluation {
     public int queenValue { get; set; } = 900;
     
     bool printBoard = true;
-    IPositionTables positionTables;
+    PositionTables positionTables;
     
-    public Evaluation_V4_PositionTables(IPositionTables positionTables) {
+    public Evaluation_V4_PositionTables(PositionTables positionTables) {
         this.positionTables = positionTables;
     }
 
