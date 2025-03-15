@@ -1,5 +1,0 @@
-the position tables are flipped due to how the pieces are stored in the piece array
-the 0th position in the piece array is the 0th square index (the bottom left square) 
-however in these table arrays it would be the 56th position
-maybe revisit it and see whether reording the piece array would be more sensible...
-for now though, the position tables are just flipped and the top row is the bottom row, bottom row the top, etc..

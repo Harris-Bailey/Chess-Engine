@@ -1,4 +1,6 @@
-namespace Chess_Application; 
+using Tests;
+
+namespace Chess; 
 public class UCIChessEngine {
     private Board board;
     private MoveGenerator moveGenerator;
@@ -15,7 +17,7 @@ public class UCIChessEngine {
         this.name = name;
         this.evaluator = evaluator;
 
-        bot = new MinimaxPlayer(board, moveGenerator, OnMoveChosen, 5, evaluator);
+        bot = new MinimaxBot(board, moveGenerator, OnMoveChosen, 5, evaluator);
 
         positionHandler = new FENHandler(board, moveGenerator);
         positionHandler.Initialise();
@@ -33,38 +35,10 @@ public class UCIChessEngine {
     public void RunAutomatically(string FENString) {
         previousMove = Move.NullMove;
         positionHandler.Initialise(FENString);
-        // if (name != string.Empty) {
-        //     Console.WriteLine($"{name} - {board.currentTeam}");
-        // }
         bot.StartProcessing();
     }
 
     public void Run() {
-        // Move[] moves = moveGenerator.UpdateAllPieces(true);
-        // foreach (Move move in moves) {
-        //     Console.WriteLine(move);
-        // }
-        // return;
-        // int evaluation = new Evaluation_V4_PositionTables().Evaluate(board, Team.White, Team.Black);
-        // Console.WriteLine(evaluation);
-        // int[] squareIndexes = BitboardHelper.GetSquareIndexesFromBitboard(board.GetTeamBitboard(Team.White));
-        // foreach (int index in squareIndexes)
-        //     Console.WriteLine(index);
-        
-        // int evaluation = new Evaluation_V4_PositionTables().Evaluate(board, Team.White, Team.Black);
-        // Console.WriteLine(evaluation);
-        
-        // BitboardHelper.GetPieceCount(board.GetPieceBitboard<Pawn>(Team.White));
-        // return;
-        // for (int i = 1; i <= 7; i++) {
-        //     bot = new MinimaxPlayer(board, moveGenerator, OnMoveChosen, i, new Evaluation_V5_PawnsAndTables());
-        //     bot.StartProcessing();
-        // }
-        
-        // black is this -> V5
-        // white is terminal -> V4
-        
-        // return;
         while (true) {
             string? input = Console.ReadLine();
             if (input == null)
@@ -150,8 +124,6 @@ public class UCIChessEngine {
                 board.MakeMove(moveToMake);
             }
         }
-
-        // board.PrintBoard();
     }
 
     private void OnMoveChosen(Move move) {

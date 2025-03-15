@@ -1,6 +1,4 @@
-using System.Collections.Immutable;
-
-namespace Chess_Application;
+namespace Chess;
 
 public class MoveOrdering {
     IEvaluation evaluation;

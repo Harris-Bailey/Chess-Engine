@@ -1,7 +1,8 @@
 using System.Runtime.InteropServices;
 
-namespace Chess_Application; 
-public class MinimaxPlayer : Bot {
+namespace Chess;
+ 
+public class MinimaxBot : Bot {
     private int depth;
     IEvaluation evaluation;
     private Move bestMove = Move.NullMove;
@@ -10,12 +11,11 @@ public class MinimaxPlayer : Bot {
     private const int negativeInfinity = -positiveInfinity;
     private const int checkmateValue = 1_000_000;
     private Dictionary<string, int> repetitionTable;
-    // private Dictionary<string, int> positionEvaluations;
-    int nodes = 0;
+
     MoveOrdering orderer;
     Random rand;
     
-    public MinimaxPlayer(Board board, MoveGenerator moveGenerator, Action<Move> onMoveChosen, int depth, IEvaluation evaluation) : base(board, moveGenerator, onMoveChosen) {
+    public MinimaxBot(Board board, MoveGenerator moveGenerator, Action<Move> onMoveChosen, int depth, IEvaluation evaluation) : base(board, moveGenerator, onMoveChosen) {
         this.depth = depth;
         this.evaluation = evaluation;
         orderer = new MoveOrdering(evaluation);
@@ -24,9 +24,7 @@ public class MinimaxPlayer : Bot {
     }
 
     public override void StartProcessing() {
-        nodes = 0;
         StartAlgorithm();
-        // Console.WriteLine(nodes);
     }
     
     public override void ResetBot() {
@@ -89,7 +87,6 @@ public class MinimaxPlayer : Bot {
             board.MakeMove(move);
             string currentFENPosition = FENHandler.GetFENString(board);
 
-            nodes++;
             int evaluation = -Search(depth - 1, -beta, -alpha);
             
             Console.WriteLine($"{move} has evaluation of {evaluation}");
@@ -97,9 +94,7 @@ public class MinimaxPlayer : Bot {
             repetitionsOfState = ref CollectionsMarshal.GetValueRefOrAddDefault(repetitionTable, FENHandler.GetFENString(board), out _);
             board.UndoMove();
             repetitionsOfState--;
-            // if (depth == this.depth) {
-            //     Console.WriteLine($"{move} has evaluation of {evaluation}");
-            // }
+
             if (evaluation >= beta) {
                 return beta;
             }
@@ -129,15 +124,10 @@ public class MinimaxPlayer : Bot {
         orderer.OrderMoves(board, captures);
         foreach (Move move in captures) {
             board.MakeMove(move);
-            // Console.WriteLine();
-            // Console.WriteLine("Making move: ");
-            // BitboardHelper.PrintBitboard(board.GetPieceBitboard<Pawn>(Team.Black), 8);
-            nodes++;
+
             int evaluation = -QuiescenceSearch(-beta, -alpha);
             board.UndoMove();
-            // Console.WriteLine();
-            // Console.WriteLine("Undoing: ");
-            // BitboardHelper.PrintBitboard(board.GetPieceBitboard<Pawn>(Team.Black), 8);
+
             if (evaluation >= beta) {
                 return beta;
             }
@@ -149,9 +139,6 @@ public class MinimaxPlayer : Bot {
     }
 
     private int StaticEvaluation() {
-        // getting the pieces of the teams
-        // PiecesRemaining whitePiecesRemaining = board.GetTeamsPieces(Team.Black);
-        // PiecesRemaining blackPiecesRemaining = board.GetTeamsPieces(Team.Black);
         int whiteEvaluation = evaluation.Evaluate(board, Team.White, Team.Black);
         int blackEvaluation = evaluation.Evaluate(board, Team.Black, Team.White);
 
