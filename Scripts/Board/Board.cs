@@ -251,7 +251,7 @@ public class Board {
         MovePiece(pieceToMove, startingSquare, targetSquare);
         GameState newState = new GameState(move, enPassantPawn, capturedPiece, promotedPawn, castlingAvailability, pieceToMove.HasMoved);
         gameStates.Push(newState);
-        repetitionTable.Push(FENHandler.GetFENString(this));
+        repetitionTable.Push(FENHandler.GetFENPieces(this));
         pieceToMove.SetToMoved();
         (currentTeam, opponentTeam) = (opponentTeam, currentTeam);
     }

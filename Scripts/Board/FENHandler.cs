@@ -103,48 +103,6 @@ public class FENHandler {
         
         return FEN.Trim('/');
     }
-    
-    public static string GetFENString(Board board) {
-        string FEN = string.Empty;
-        for (int y = Board.dimensions - 1; y >= 0; y--) {
-            int numBlankSpaces = 0;
-            for (int x = 0; x < Board.dimensions; x++) {
-                Piece piece = board.pieces[x + y * Board.dimensions];
-                if (piece == null) {
-                    numBlankSpaces++;
-                    continue;
-                }
-                if (numBlankSpaces > 0) {
-                    FEN += numBlankSpaces;
-                    numBlankSpaces = 0;
-                }
-                FEN += board.pieces[x + y * Board.dimensions].ToString();
-            }
-            if (numBlankSpaces > 0)
-                FEN += numBlankSpaces;
-            FEN += "/";
-        }
-        if (board.currentTeam == Team.White) {
-            FEN += " w ";
-        }
-        else if (board.currentTeam == Team.Black) {
-            FEN += " b ";
-        }
-        King whiteKing = board.GetTeamsKing(Team.White);
-        King blackKing = board.GetTeamsKing(Team.Black);
-        if (whiteKing.canCastleKingside) {
-            FEN += "K";
-        }
-        if (whiteKing.canCastleQueenside)
-            FEN += "Q";
-        if (blackKing.canCastleKingside)
-            FEN += "k";
-        if (blackKing.canCastleQueenside)
-            FEN += "q";
-        if (!whiteKing.canCastleKingside && !whiteKing.canCastleQueenside && !blackKing.canCastleKingside && !blackKing.canCastleQueenside)
-            FEN += "-";
-        return FEN.Trim('/');
-    }
 
     public Team SetStartingTeam() {
         if (FENRecord.Length < 2) {
@@ -253,5 +211,53 @@ public class FENHandler {
             }
         }
         return Move.NullMove;
+    }
+    
+    
+    public static string GetFENString(Board board) {
+        string FEN = GetFENPieces(board).Trim('/');
+        if (board.currentTeam == Team.White) {
+            FEN += " w ";
+        }
+        else if (board.currentTeam == Team.Black) {
+            FEN += " b ";
+        }
+        King whiteKing = board.GetTeamsKing(Team.White);
+        King blackKing = board.GetTeamsKing(Team.Black);
+        if (whiteKing.canCastleKingside) {
+            FEN += "K";
+        }
+        if (whiteKing.canCastleQueenside)
+            FEN += "Q";
+        if (blackKing.canCastleKingside)
+            FEN += "k";
+        if (blackKing.canCastleQueenside)
+            FEN += "q";
+        if (!whiteKing.canCastleKingside && !whiteKing.canCastleQueenside && !blackKing.canCastleKingside && !blackKing.canCastleQueenside)
+            FEN += "-";
+        return FEN;
+    }
+    
+    public static string GetFENPieces(Board board) {
+        string FEN = string.Empty;
+        for (int y = Board.dimensions - 1; y >= 0; y--) {
+            int numBlankSpaces = 0;
+            for (int x = 0; x < Board.dimensions; x++) {
+                Piece piece = board.pieces[x + y * Board.dimensions];
+                if (piece == null) {
+                    numBlankSpaces++;
+                    continue;
+                }
+                if (numBlankSpaces > 0) {
+                    FEN += numBlankSpaces;
+                    numBlankSpaces = 0;
+                }
+                FEN += board.pieces[x + y * Board.dimensions].ToString();
+            }
+            if (numBlankSpaces > 0)
+                FEN += numBlankSpaces;
+            FEN += "/";
+        }
+        return FEN;
     }
 }
