@@ -58,7 +58,7 @@ public class Pawn : Piece {
         }
         
         int doublePushSquareIndex = singlePushTargetSquareIndex + CompassDirections.Up * (int)direction;
-        if (CanAddDoublePush(squareCoord, doublePushSquareIndex, singlePush == 0, friendlyKing, allPiecesBitboard))
+        if (CanAddDoublePush(squareCoord, doublePushSquareIndex, singlePush == 0, friendlyKing, allPiecesBitboard, capturesOnlyMask != ulong.MaxValue))
             moves[movesCount++] = new Move(SquareIndex, doublePushSquareIndex, Move.SpecialMoveType.PushPawnTwoSquares);
 
         if (CanAddEnPassantMove(board, friendlyKing)) {
@@ -70,7 +70,10 @@ public class Pawn : Piece {
         }
     }
     
-    public bool CanAddDoublePush(Coordinate squareCoord, int doublePushSquareIndex, bool singlePushHasPiece, King friendlyKing, ulong allPiecesBitboard) {
+    public bool CanAddDoublePush(Coordinate squareCoord, int doublePushSquareIndex, bool singlePushHasPiece, King friendlyKing, ulong allPiecesBitboard, bool capturesOnly) {
+        // only generating captures and we know a double push can't capture anything
+        if (capturesOnly)
+            return false;
         // if the pawn isn't on the starting rank so can never add the double move
         if (squareCoord.y != startingRankNum) 
             return false;
