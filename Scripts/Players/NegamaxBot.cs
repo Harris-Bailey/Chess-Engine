@@ -2,25 +2,23 @@ using System.Runtime.InteropServices;
 
 namespace Chess;
  
-public class MinimaxBot : Bot {
-    private int depth;
-    IEvaluation evaluation;
-    private Move bestMove = Move.NullMove;
-
-    private const int positiveInfinity = 99_999_999;
-    private const int negativeInfinity = -positiveInfinity;
-    private const int checkmateValue = 1_000_000;
+public class NegamaxBot : Bot {
+    private int maxDepth;
+    private IEvaluation evaluation;
+    private Move bestMove;
+    private MoveOrdering orderer;
     private Dictionary<string, int> repetitionTable;
 
-    MoveOrdering orderer;
-    Random rand;
+    private const int InitialAlpha = 99_999_999;
+    private const int InitialBeta = -InitialAlpha;
+    private const int checkmateValue = 1_000_000;
+
     
-    public MinimaxBot(Board board, MoveGenerator moveGenerator, Action<Move> onMoveChosen, int depth, IEvaluation evaluation) : base(board, moveGenerator, onMoveChosen) {
-        this.depth = depth;
+    public NegamaxBot(Board board, MoveGenerator moveGenerator, Action<Move> onMoveChosen, int maxDepth, IEvaluation evaluation) : base(board, moveGenerator, onMoveChosen) {        
+        this.maxDepth = maxDepth;
         this.evaluation = evaluation;
         orderer = new MoveOrdering(evaluation);
         repetitionTable = new Dictionary<string, int>();
-        rand = new Random();
     }
 
     public override void StartProcessing() {
@@ -32,6 +30,7 @@ public class MinimaxBot : Bot {
     }
     
     private void InitialiseRepetitionTable() {
+        repetitionTable.Clear();
         string[] boardRepetitionTable = board.repetitionTable.ToArray();
         foreach (string state in boardRepetitionTable) {
             ref int repetitionsOfState = ref CollectionsMarshal.GetValueRefOrAddDefault(repetitionTable, state, out _);
@@ -42,28 +41,21 @@ public class MinimaxBot : Bot {
     private void StartAlgorithm() {
         InitialiseRepetitionTable();
         
-        int eval = Search(1, negativeInfinity, positiveInfinity);
-        Console.WriteLine(eval);
-        // the move hasn't been set so just choose the first move in the array for the team and play it
+        Search(maxDepth, 0, InitialBeta, InitialAlpha);
+        
         if (bestMove.isNullMove) {
             Move[] moves = moveGenerator.UpdateAllPieces();
-            if (moves.Any()) {
-                // assign a random move
-                bestMove = moves[rand.Next(moves.Length)];
-            }
+            
+            if (moves.Length > 0)
+                bestMove = moves[0];
         }
+        
         onMoveChosen.Invoke(bestMove);
         bestMove = Move.NullMove;
     }
 
-    private int Search(int depth, int alpha, int beta) {
-        // this repetition table will only be useful if we have a repetition table in the board class too
-        ref int repetitionsOfState = ref CollectionsMarshal.GetValueRefOrAddDefault(repetitionTable, FENHandler.GetFENString(board), out _);
-        repetitionsOfState++;
-        if (repetitionsOfState >= 3) {
-            return 0;
-        }
-        if (depth == 0) {
+    private int Search(int maxDepth, int depth, int alpha, int beta) {
+        if (depth == maxDepth) {
             int evaluation = QuiescenceSearch(alpha, beta);
             return evaluation;
         }
@@ -76,7 +68,7 @@ public class MinimaxBot : Bot {
                 // returning it as minus since it needs to reflect the current team and its a terrible position
                 // adding the depth so it checkmates in the fewest moves
                 // the higher the depth the less it takes to checkmate and the higher the checkmate value will be
-                return -(checkmateValue + depth); 
+                return -(checkmateValue - depth); 
             }
             return 0;
         }
@@ -86,12 +78,16 @@ public class MinimaxBot : Bot {
         foreach (Move move in moves) {
             board.MakeMove(move);
             string currentFENPosition = FENHandler.GetFENString(board);
-
-            int evaluation = -Search(depth - 1, -beta, -alpha);
+            ref int repetitionsOfState = ref CollectionsMarshal.GetValueRefOrAddDefault(repetitionTable, FENHandler.GetFENPieces(board), out _);
+            ++repetitionsOfState;
             
-            Console.WriteLine($"{move} has evaluation of {evaluation}");
+            if (repetitionsOfState > 3) {
+                board.UndoMove();                
+                return 0;
+            }
 
-            repetitionsOfState = ref CollectionsMarshal.GetValueRefOrAddDefault(repetitionTable, FENHandler.GetFENString(board), out _);
+            int evaluation = -Search(maxDepth, depth + 1, -beta, -alpha);
+
             board.UndoMove();
             repetitionsOfState--;
 
@@ -100,8 +96,8 @@ public class MinimaxBot : Bot {
             }
             if (evaluation > alpha) {
                 alpha = evaluation;
-
-                if (depth == this.depth) {
+                
+                if (depth == 0) {
                     bestMove = move;
                 }
             }

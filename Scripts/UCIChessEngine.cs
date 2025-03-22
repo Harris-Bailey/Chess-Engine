@@ -17,7 +17,7 @@ public class UCIChessEngine {
         this.name = name;
         this.evaluator = evaluator;
 
-        bot = new MinimaxBot(board, moveGenerator, OnMoveChosen, 5, evaluator);
+        bot = new NegamaxBot(board, moveGenerator, OnMoveChosen, 5, evaluator);
 
         positionHandler = new FENHandler(board, moveGenerator);
         positionHandler.Initialise();
@@ -82,7 +82,7 @@ public class UCIChessEngine {
         }
     }
 
-    private void HandlePositionInitialisation(string message) {
+    public void HandlePositionInitialisation(string message) {
         // finding the index of "fen"
         string movesCommand = "moves";
         string FENCommand = "fen";
@@ -124,6 +124,8 @@ public class UCIChessEngine {
                 board.MakeMove(moveToMake);
             }
         }
+        
+        board.PrintBoard();
     }
 
     private void OnMoveChosen(Move move) {
