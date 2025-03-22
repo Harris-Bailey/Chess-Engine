@@ -28,45 +28,32 @@ public class Evaluation_V4_PositionTables : IEvaluation {
         score += BitboardHelper.GetPieceCount(teamKnightBitboard) * knightValue;
         score += BitboardHelper.GetPieceCount(teamRookBitboard) * rookValue;
         score += BitboardHelper.GetPieceCount(teamQueenBitboard) * queenValue;
-
-        int[] pawnPositions = BitboardHelper.GetSquareIndexesFromBitboard(teamPawnBitboard);
-        int[] knightPositions = BitboardHelper.GetSquareIndexesFromBitboard(teamKnightBitboard);
-        int[] bishopPositions = BitboardHelper.GetSquareIndexesFromBitboard(teamBishopBitboard);
-        int[] rookPositions = BitboardHelper.GetSquareIndexesFromBitboard(teamRookBitboard);
-        int[] queenPositions = BitboardHelper.GetSquareIndexesFromBitboard(teamQueenBitboard);
-        int[] kingPositions = BitboardHelper.GetSquareIndexesFromBitboard(teamKingBitboard);
         
         if (team == Team.White) {
-            score += GetPositionValues(pawnPositions, positionTables.WhitePawnPositionTable);
-            score += GetPositionValues(bishopPositions, positionTables.WhiteBishopPositionTable);
-            score += GetPositionValues(knightPositions, positionTables.WhiteKnightPositionTable);
-            score += GetPositionValues(rookPositions, positionTables.WhiteRookPositionTable);
-            score += GetPositionValues(queenPositions, positionTables.WhiteQueenPositionTable);
-            score += GetPositionValues(kingPositions, positionTables.WhiteKingPositionTable);
+            score += GetPositionValues(teamPawnBitboard, positionTables.WhitePawnPositionTable);
+            score += GetPositionValues(teamBishopBitboard, positionTables.WhiteBishopPositionTable);
+            score += GetPositionValues(teamKnightBitboard, positionTables.WhiteKnightPositionTable);
+            score += GetPositionValues(teamRookBitboard, positionTables.WhiteRookPositionTable);
+            score += GetPositionValues(teamQueenBitboard, positionTables.WhiteQueenPositionTable);
+            score += GetPositionValues(teamKingBitboard, positionTables.WhiteKingPositionTable);
         }
         else if (team == Team.Black) {
-            score += GetPositionValues(pawnPositions, positionTables.BlackPawnPositionTable);
-            score += GetPositionValues(bishopPositions, positionTables.BlackBishopPositionTable);
-            score += GetPositionValues(knightPositions, positionTables.BlackKnightPositionTable);
-            score += GetPositionValues(rookPositions, positionTables.BlackRookPositionTable);
-            score += GetPositionValues(queenPositions, positionTables.BlackQueenPositionTable);
-            score += GetPositionValues(kingPositions, positionTables.BlackKingPositionTable);
+            score += GetPositionValues(teamPawnBitboard, positionTables.BlackPawnPositionTable);
+            score += GetPositionValues(teamBishopBitboard, positionTables.BlackBishopPositionTable);
+            score += GetPositionValues(teamKnightBitboard, positionTables.BlackKnightPositionTable);
+            score += GetPositionValues(teamRookBitboard, positionTables.BlackRookPositionTable);
+            score += GetPositionValues(teamQueenBitboard, positionTables.BlackQueenPositionTable);
+            score += GetPositionValues(teamKingBitboard, positionTables.BlackKingPositionTable);
         }
-        
-        // if (printBoard) {
-        //     board.PrintBoard();
-        //     Console.WriteLine($"Current team: {team}");
-        //     Console.WriteLine($"This position has a score of {score}");
-        //     printBoard = false;
-        // }
 
         return score;
     }
 
-    private int GetPositionValues(int[] piecePositions, int[] positionValues) {
+    private int GetPositionValues(ulong bitboard, int[] positionValues) {
         int score = 0;
-        foreach (int positionIndex in piecePositions) {
-            score += positionValues[positionIndex];
+        while (bitboard != 0) {
+            int squareIndex = BitboardHelper.PopLeastSignificantBit(ref bitboard);
+            score += positionValues[squareIndex];
         }
         return score;
     }
