@@ -41,7 +41,7 @@ public class NegamaxBot : Bot {
     private void StartAlgorithm() {
         InitialiseRepetitionTable();
         
-        Search(maxDepth, 0, InitialBeta, InitialAlpha);
+        Search(0, maxDepth, InitialBeta, InitialAlpha);
         
         if (bestMove.isNullMove) {
             Move[] moves = moveGenerator.UpdateAllPieces();
@@ -54,7 +54,7 @@ public class NegamaxBot : Bot {
         bestMove = Move.NullMove;
     }
 
-    private int Search(int maxDepth, int depth, int alpha, int beta) {
+    private int Search(int depth, int maxDepth, int alpha, int beta) {
         if (depth == maxDepth) {
             int evaluation = QuiescenceSearch(alpha, beta);
             return evaluation;
@@ -86,7 +86,7 @@ public class NegamaxBot : Bot {
                 return 0;
             }
 
-            int evaluation = -Search(maxDepth, depth + 1, -beta, -alpha);
+            int evaluation = -Search(depth + 1, maxDepth, -beta, -alpha);
 
             board.UndoMove();
             repetitionsOfState--;
