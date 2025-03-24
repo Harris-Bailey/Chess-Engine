@@ -2,7 +2,7 @@ namespace Chess;
 
 public class PeSTOPieceTables : PositionTables {
     // pawn positional score
-    public override sealed int[] BlackPawnPositionTable { get; protected set; } = {
+    protected override sealed int[] BlackPawnEarlyPositionTable { get; } = {
           0,   0,   0,   0,   0,   0,  0,   0,
          98, 134,  61,  95,  68, 126, 34, -11,
          -6,   7,  26,  31,  65,  56, 25, -20,
@@ -14,7 +14,7 @@ public class PeSTOPieceTables : PositionTables {
     };
     
     // knight positional score
-    public override sealed int[] BlackKnightPositionTable { get; protected set; } = {
+    protected override sealed int[] BlackKnightEarlyPositionTable { get; } = {
         -167, -89, -34, -49,  61, -97, -15, -107,
          -73, -41,  72,  36,  23,  62,   7,  -17,
          -47,  60,  37,  65,  84, 129,  73,   44,
@@ -26,7 +26,7 @@ public class PeSTOPieceTables : PositionTables {
     };
     
     // bishop positional score
-    public override sealed int[] BlackBishopPositionTable { get; protected set; } = {
+    protected override sealed int[] BlackBishopEarlyPositionTable { get; } = {
         -29,   4, -82, -37, -25, -42,   7,  -8,
         -26,  16, -18, -13,  30,  59,  18, -47,
         -16,  37,  43,  40,  35,  50,  37,  -2,
@@ -38,7 +38,7 @@ public class PeSTOPieceTables : PositionTables {
     };
     
     // rook positional score
-    public override sealed int[] BlackRookPositionTable { get; protected set; } = {
+    protected override sealed int[] BlackRookEarlyPositionTable { get; } = {
          32,  42,  32,  51, 63,  9,  31,  43,
          27,  32,  58,  62, 80, 67,  26,  44,
          -5,  19,  26,  36, 17, 45,  61,  16,
@@ -51,7 +51,7 @@ public class PeSTOPieceTables : PositionTables {
     };
     
     // queen positional score
-    public override sealed int[] BlackQueenPositionTable { get; protected set; } = {
+    protected override sealed int[] BlackQueenEarlyPositionTable { get; } = {
         -28,   0,  29,  12,  59,  44,  43,  45,
         -24, -39,  -5,   1, -16,  57,  28,  54,
         -13, -17,   7,   8,  29,  56,  47,  57,
@@ -63,7 +63,7 @@ public class PeSTOPieceTables : PositionTables {
     };
     
     // king positional score
-    public override sealed int[] BlackKingPositionTable { get; protected set; } = {
+    protected override sealed int[] BlackKingEarlyPositionTable { get; } = {
         -65,  23,  16, -15, -56, -34,   2,  13,
          29,  -1, -20,  -7,  -8,  -4, -38, -29,
          -9,  24,   2, -16, -20,   6,  22, -22,
@@ -73,4 +73,11 @@ public class PeSTOPieceTables : PositionTables {
           1,   7,  -8, -64, -43, -16,   9,   8,
         -15,  36,  12, -54,   8, -28,  24,  14,
     };
+    
+    protected override int[] BlackPawnLatePositionTable => BlackPawnEarlyPositionTable;
+    protected override int[] BlackKnightLatePositionTable => BlackBishopEarlyPositionTable;
+    protected override int[] BlackBishopLatePositionTable => BlackKnightEarlyPositionTable;
+    protected override int[] BlackRookLatePositionTable => BlackRookEarlyPositionTable;
+    protected override int[] BlackQueenLatePositionTable => BlackQueenEarlyPositionTable;
+    protected override int[] BlackKingLatePositionTable => BlackKingEarlyPositionTable;
 }

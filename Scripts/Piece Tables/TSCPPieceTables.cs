@@ -2,7 +2,7 @@ namespace Chess;
 
 public class TSCPPieceTables : PositionTables {
     
-    public override sealed int[] BlackPawnPositionTable { get; protected set; } = {
+    protected override sealed int[] BlackPawnEarlyPositionTable { get; } = {
     	  0,   0,   0,   0,   0,   0,   0,   0,
     	  5,  10,  15,  20,  20,  15,  10,   5,
     	  4,   8,  12,  16,  16,  12,   8,   4,
@@ -13,7 +13,7 @@ public class TSCPPieceTables : PositionTables {
     	  0,   0,   0,   0,   0,   0,   0,   0
     };
     
-    public override sealed int[] BlackKnightPositionTable { get; protected set; } = {
+    protected override sealed int[] BlackKnightEarlyPositionTable { get; } = {
     	-10, -10, -10, -10, -10, -10, -10, -10,
     	-10,   0,   0,   0,   0,   0,   0, -10,
     	-10,   0,   5,   5,   5,   5,   0, -10,
@@ -24,7 +24,7 @@ public class TSCPPieceTables : PositionTables {
     	-10, -30, -10, -10, -10, -10, -30, -10
     };
     
-    public override sealed int[] BlackBishopPositionTable { get; protected set; } = {
+    protected override sealed int[] BlackBishopEarlyPositionTable { get; } = {
     	-10, -10, -10, -10, -10, -10, -10, -10,
     	-10,   0,   0,   0,   0,   0,   0, -10,
     	-10,   0,   5,   5,   5,   5,   0, -10,
@@ -35,7 +35,7 @@ public class TSCPPieceTables : PositionTables {
     	-10, -10, -20, -10, -10, -20, -10, -10
     };
     
-    public override sealed int[] BlackRookPositionTable { get; protected set; } = {
+    protected override sealed int[] BlackRookEarlyPositionTable { get; } = {
         0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0,
@@ -46,7 +46,7 @@ public class TSCPPieceTables : PositionTables {
         0, 0, 0, 0, 0, 0, 0, 0,
     };
     
-    public override sealed int[] BlackQueenPositionTable { get; protected set; } = {
+    protected override sealed int[] BlackQueenEarlyPositionTable { get; } = {
         0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0,
@@ -57,7 +57,7 @@ public class TSCPPieceTables : PositionTables {
         0, 0, 0, 0, 0, 0, 0, 0,
     };
     
-    public override sealed int[] BlackKingPositionTable { get; protected set; } = {
+    protected override sealed int[] BlackKingEarlyPositionTable { get; } = {
     	-40, -40, -40, -40, -40, -40, -40, -40,
     	-40, -40, -40, -40, -40, -40, -40, -40,
     	-40, -40, -40, -40, -40, -40, -40, -40,
@@ -67,4 +67,11 @@ public class TSCPPieceTables : PositionTables {
     	-20, -20, -20, -20, -20, -20, -20, -20,
     	  0,  20,  40, -20,   0, -20,  40,  20
     };
+	
+	protected override int[] BlackPawnLatePositionTable => BlackPawnEarlyPositionTable;
+    protected override int[] BlackKnightLatePositionTable => BlackBishopEarlyPositionTable;
+    protected override int[] BlackBishopLatePositionTable => BlackKnightEarlyPositionTable;
+    protected override int[] BlackRookLatePositionTable => BlackRookEarlyPositionTable;
+    protected override int[] BlackQueenLatePositionTable => BlackQueenEarlyPositionTable;
+    protected override int[] BlackKingLatePositionTable => BlackKingEarlyPositionTable;
 }

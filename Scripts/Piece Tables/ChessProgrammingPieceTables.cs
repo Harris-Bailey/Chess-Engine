@@ -3,7 +3,7 @@ namespace Chess;
 public class ChessProgrammingPieceTables : PositionTables {
     
     // pawn positional score
-    public override sealed int[] BlackPawnPositionTable { get; protected set; } = {
+    protected override sealed int[] BlackPawnEarlyPositionTable { get; } = {
         90,  90,  90,  90,  90,  90,  90,  90,
         30,  30,  30,  40,  40,  30,  30,  30,
         20,  20,  20,  30,  30,  30,  20,  20,
@@ -15,7 +15,7 @@ public class ChessProgrammingPieceTables : PositionTables {
     };
     
     // knight positional score
-    public override sealed int[] BlackKnightPositionTable { get; protected set; } = {
+    protected override sealed int[] BlackKnightEarlyPositionTable { get; } = {
         -5,   0,   0,   0,   0,   0,   0,  -5,
         -5,   0,   0,  10,  10,   0,   0,  -5,
         -5,   5,  20,  20,  20,  20,   5,  -5,
@@ -27,7 +27,7 @@ public class ChessProgrammingPieceTables : PositionTables {
     };
     
     // bishop positional score
-    public override sealed int[] BlackBishopPositionTable { get; protected set; } = {
+    protected override sealed int[] BlackBishopEarlyPositionTable { get; } = {
         0,   0,   0,   0,   0,   0,   0,   0,
         0,   0,   0,   0,   0,   0,   0,   0,
         0,   0,   0,  10,  10,   0,   0,   0,
@@ -40,7 +40,7 @@ public class ChessProgrammingPieceTables : PositionTables {
     };
     
     // rook positional score
-    public override sealed int[] BlackRookPositionTable { get; protected set; } = {
+    protected override sealed int[] BlackRookEarlyPositionTable { get; } = {
         50,  50,  50,  50,  50,  50,  50,  50,
         50,  50,  50,  50,  50,  50,  50,  50,
         0,   0,  10,  20,  20,  10,   0,   0,
@@ -52,7 +52,7 @@ public class ChessProgrammingPieceTables : PositionTables {
     
     };
     
-    public override sealed int[] BlackQueenPositionTable { get; protected set; } = {
+    protected override sealed int[] BlackQueenEarlyPositionTable { get; } = {
         0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0,
@@ -64,7 +64,7 @@ public class ChessProgrammingPieceTables : PositionTables {
     };
     
     // king positional score
-    public override sealed int[] BlackKingPositionTable { get; protected set; } = {
+    protected override sealed int[] BlackKingEarlyPositionTable { get; } = {
         0,   0,   0,   0,   0,   0,   0,   0,
         0,   0,   5,   5,   5,   5,   0,   0,
         0,   5,   5,  10,  10,   5,   5,   0,
@@ -74,4 +74,10 @@ public class ChessProgrammingPieceTables : PositionTables {
         0,   5,   5,  -5,  -5,   0,   5,   0,
         0,   0,   5,   0, -15,   0,  10,   0
     };
+    protected override int[] BlackPawnLatePositionTable => BlackPawnEarlyPositionTable;
+    protected override int[] BlackKnightLatePositionTable => BlackBishopEarlyPositionTable;
+    protected override int[] BlackBishopLatePositionTable => BlackKnightEarlyPositionTable;
+    protected override int[] BlackRookLatePositionTable => BlackRookEarlyPositionTable;
+    protected override int[] BlackQueenLatePositionTable => BlackQueenEarlyPositionTable;
+    protected override int[] BlackKingLatePositionTable => BlackKingEarlyPositionTable;
 }

@@ -1,43 +1,54 @@
 namespace Chess;
 
 public abstract class PositionTables {
-    public int[][] AllPositionTables { get; protected set; }
-    public abstract int[] BlackPawnPositionTable { get; protected set; }
-    public abstract int[] BlackKnightPositionTable { get; protected set; }
-    public abstract int[] BlackBishopPositionTable { get; protected set; }
-    public abstract int[] BlackRookPositionTable { get; protected set; }
-    public abstract int[] BlackQueenPositionTable { get; protected set; }
-    public abstract int[] BlackKingPositionTable { get; protected set; }
+    public int[][] AllEarlyPositionTables { get; protected set; }
+    protected abstract int[] BlackPawnEarlyPositionTable { get; }
+    protected abstract int[] BlackKnightEarlyPositionTable { get; }
+    protected abstract int[] BlackBishopEarlyPositionTable { get; }
+    protected abstract int[] BlackRookEarlyPositionTable { get; }
+    protected abstract int[] BlackQueenEarlyPositionTable { get; }
+    protected abstract int[] BlackKingEarlyPositionTable { get; }    
     
-    public int[] WhitePawnPositionTable { get; protected set; }
-    public int[] WhiteKnightPositionTable { get; protected set; }
-    public int[] WhiteBishopPositionTable { get; protected set; }
-    public int[] WhiteRookPositionTable { get; protected set; }
-    public int[] WhiteQueenPositionTable { get; protected set; }
-    public int[] WhiteKingPositionTable { get; protected set; }
     
-    public PositionTables() {
-        WhitePawnPositionTable = GetFlippedArray(BlackPawnPositionTable);
-        WhiteKnightPositionTable = GetFlippedArray(BlackKnightPositionTable);
-        WhiteBishopPositionTable = GetFlippedArray(BlackBishopPositionTable);
-        WhiteRookPositionTable = GetFlippedArray(BlackRookPositionTable);
-        WhiteQueenPositionTable = GetFlippedArray(BlackQueenPositionTable);
-        WhiteKingPositionTable = GetFlippedArray(BlackKingPositionTable);
-        
-        AllPositionTables = new int[Board.NumPieces * Enum.GetValues(typeof(Team)).Length][];
-		AllPositionTables[(int)BitboardIndexes.PawnIndex * (int)Team.White] = WhitePawnPositionTable;
-		AllPositionTables[(int)BitboardIndexes.KnightIndex * (int)Team.White] = WhiteKnightPositionTable;
-		AllPositionTables[(int)BitboardIndexes.BishopIndex * (int)Team.White] = WhiteBishopPositionTable;
-		AllPositionTables[(int)BitboardIndexes.RookIndex * (int)Team.White] = WhiteRookPositionTable;
-		AllPositionTables[(int)BitboardIndexes.QueenIndex * (int)Team.White] = WhiteQueenPositionTable;
-		AllPositionTables[(int)BitboardIndexes.KingIndex * (int)Team.White] = WhiteKingPositionTable;
+    public int[][] AllLatePositionTables { get; protected set; }
+    protected abstract int[] BlackPawnLatePositionTable { get; }
+    protected abstract int[] BlackKnightLatePositionTable { get; }
+    protected abstract int[] BlackBishopLatePositionTable { get; }
+    protected abstract int[] BlackRookLatePositionTable { get; }
+    protected abstract int[] BlackQueenLatePositionTable { get; }
+    protected abstract int[] BlackKingLatePositionTable { get; }
+    
+    public PositionTables() {        
+        AllEarlyPositionTables = new int[Board.NumPieces * Enum.GetValues(typeof(Team)).Length][];
+		AllEarlyPositionTables[(int)BitboardIndexes.PawnIndex * ((int)Team.White + 1)] = GetFlippedArray(BlackPawnEarlyPositionTable);
+		AllEarlyPositionTables[(int)BitboardIndexes.KnightIndex * ((int)Team.White + 1)] = GetFlippedArray(BlackKnightEarlyPositionTable);
+		AllEarlyPositionTables[(int)BitboardIndexes.BishopIndex * ((int)Team.White + 1)] = GetFlippedArray(BlackBishopEarlyPositionTable);
+		AllEarlyPositionTables[(int)BitboardIndexes.RookIndex * ((int)Team.White + 1)] = GetFlippedArray(BlackRookEarlyPositionTable);
+		AllEarlyPositionTables[(int)BitboardIndexes.QueenIndex * ((int)Team.White + 1)] = GetFlippedArray(BlackQueenEarlyPositionTable);
+		AllEarlyPositionTables[(int)BitboardIndexes.KingIndex * ((int)Team.White + 1)] = GetFlippedArray(BlackKingEarlyPositionTable);
 		
-		AllPositionTables[(int)BitboardIndexes.PawnIndex * (int)Team.Black] = WhitePawnPositionTable;
-		AllPositionTables[(int)BitboardIndexes.KnightIndex * (int)Team.Black] = WhiteKnightPositionTable;
-		AllPositionTables[(int)BitboardIndexes.BishopIndex * (int)Team.Black] = WhiteBishopPositionTable;
-		AllPositionTables[(int)BitboardIndexes.RookIndex * (int)Team.Black] = WhiteRookPositionTable;
-		AllPositionTables[(int)BitboardIndexes.QueenIndex * (int)Team.Black] = WhiteQueenPositionTable;
-		AllPositionTables[(int)BitboardIndexes.KingIndex * (int)Team.Black] = WhiteKingPositionTable;
+		AllEarlyPositionTables[(int)BitboardIndexes.PawnIndex * ((int)Team.Black + 1)] = BlackPawnEarlyPositionTable;
+		AllEarlyPositionTables[(int)BitboardIndexes.KnightIndex * ((int)Team.Black + 1)] = BlackKnightEarlyPositionTable;
+		AllEarlyPositionTables[(int)BitboardIndexes.BishopIndex * ((int)Team.Black + 1)] = BlackBishopEarlyPositionTable;
+		AllEarlyPositionTables[(int)BitboardIndexes.RookIndex * ((int)Team.Black + 1)] = BlackRookEarlyPositionTable;
+		AllEarlyPositionTables[(int)BitboardIndexes.QueenIndex * ((int)Team.Black + 1)] = BlackQueenEarlyPositionTable;
+		AllEarlyPositionTables[(int)BitboardIndexes.KingIndex * ((int)Team.Black + 1)] = BlackKingEarlyPositionTable;
+
+        
+        AllLatePositionTables = new int[Board.NumPieces * Enum.GetValues(typeof(Team)).Length][];
+		AllLatePositionTables[(int)BitboardIndexes.PawnIndex * ((int)Team.White + 1)] = GetFlippedArray(BlackPawnLatePositionTable);
+		AllLatePositionTables[(int)BitboardIndexes.KnightIndex * ((int)Team.White + 1)] = GetFlippedArray(BlackKnightLatePositionTable);
+		AllLatePositionTables[(int)BitboardIndexes.BishopIndex * ((int)Team.White + 1)] = GetFlippedArray(BlackBishopLatePositionTable);
+		AllLatePositionTables[(int)BitboardIndexes.RookIndex * ((int)Team.White + 1)] = GetFlippedArray(BlackRookLatePositionTable);
+		AllLatePositionTables[(int)BitboardIndexes.QueenIndex * ((int)Team.White + 1)] = GetFlippedArray(BlackQueenLatePositionTable);
+		AllLatePositionTables[(int)BitboardIndexes.KingIndex * ((int)Team.White + 1)] = GetFlippedArray(BlackKingLatePositionTable);
+		
+		AllLatePositionTables[(int)BitboardIndexes.PawnIndex * ((int)Team.Black + 1)] = BlackPawnLatePositionTable;
+		AllLatePositionTables[(int)BitboardIndexes.KnightIndex * ((int)Team.Black + 1)] = BlackKnightLatePositionTable;
+		AllLatePositionTables[(int)BitboardIndexes.BishopIndex * ((int)Team.Black + 1)] = BlackBishopLatePositionTable;
+		AllLatePositionTables[(int)BitboardIndexes.RookIndex * ((int)Team.Black + 1)] = BlackRookLatePositionTable;
+		AllLatePositionTables[(int)BitboardIndexes.QueenIndex * ((int)Team.Black + 1)] = BlackQueenLatePositionTable;
+		AllLatePositionTables[(int)BitboardIndexes.KingIndex * ((int)Team.Black + 1)] = BlackKingLatePositionTable;
     }
     
     private static readonly int[] flippedTable = {
@@ -51,11 +62,21 @@ public abstract class PositionTables {
 		 0,  1,  2,  3,  4,  5,  6,  7,
 	};
     
-    public static int[] GetFlippedArray(int[] arr) {
+    private static int[] GetFlippedArray(int[] arr) {
         int[] flippedArr = new int[arr.Length];
         for (int i = 0; i < arr.Length; i++) {
             flippedArr[i] = arr[flippedTable[i]];
         }
         return flippedArr;
+    }
+    
+    public int GetPieceTableValue(int phase, BitboardIndexes pieceIndex, Team pieceTeam, int squareIndex) {
+        if (phase == 0) {
+            return AllEarlyPositionTables[(int)pieceIndex * ((int)pieceTeam + 1)][squareIndex];
+        }
+        else if (phase == 1) {
+            return AllLatePositionTables[(int)pieceIndex * ((int)pieceTeam + 1)][squareIndex];
+        }
+        return 0;
     }
 }

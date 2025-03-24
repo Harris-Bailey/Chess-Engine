@@ -43,22 +43,12 @@ public class Evaluation_V5_PawnsAndTables : IEvaluation {
         score += BitboardHelper.GetPieceCount(teamRookBitboard) * rookValue;
         score += BitboardHelper.GetPieceCount(teamQueenBitboard) * queenValue;
         
-        if (team == Team.White) {
-            score += GetPositionValues(teamPawnBitboard, positionTables.WhitePawnPositionTable);
-            score += GetPositionValues(teamBishopBitboard, positionTables.WhiteBishopPositionTable);
-            score += GetPositionValues(teamKnightBitboard, positionTables.WhiteKnightPositionTable);
-            score += GetPositionValues(teamRookBitboard, positionTables.WhiteRookPositionTable);
-            score += GetPositionValues(teamQueenBitboard, positionTables.WhiteQueenPositionTable);
-            score += GetPositionValues(teamKingBitboard, positionTables.WhiteKingPositionTable);
-        }
-        else if (team == Team.Black) {
-            score += GetPositionValues(teamPawnBitboard, positionTables.BlackPawnPositionTable);
-            score += GetPositionValues(teamBishopBitboard, positionTables.BlackBishopPositionTable);
-            score += GetPositionValues(teamKnightBitboard, positionTables.BlackKnightPositionTable);
-            score += GetPositionValues(teamRookBitboard, positionTables.BlackRookPositionTable);
-            score += GetPositionValues(teamQueenBitboard, positionTables.BlackQueenPositionTable);
-            score += GetPositionValues(teamKingBitboard, positionTables.BlackKingPositionTable);
-        }
+        score += GetPositionValues(teamPawnBitboard, BitboardIndexes.PawnIndex, team);
+        score += GetPositionValues(teamBishopBitboard, BitboardIndexes.BishopIndex, team);
+        score += GetPositionValues(teamKnightBitboard, BitboardIndexes.KnightIndex, team);
+        score += GetPositionValues(teamRookBitboard, BitboardIndexes.RookIndex, team);
+        score += GetPositionValues(teamQueenBitboard, BitboardIndexes.QueenIndex, team);
+        score += GetPositionValues(teamKingBitboard, BitboardIndexes.KingIndex, team);
         
         for (int i = 0; i < Board.dimensions; i++) {
             // ulong shiftedRankMask = rankMask << (i * Board.dimensions);
@@ -94,11 +84,11 @@ public class Evaluation_V5_PawnsAndTables : IEvaluation {
         return score;
     }
     
-    private int GetPositionValues(ulong bitboard, int[] positionValues) {
+    private int GetPositionValues(ulong bitboard, BitboardIndexes pieceIndex, Team team) {
         int score = 0;
         while (bitboard != 0) {
             int squareIndex = BitboardHelper.PopLeastSignificantBit(ref bitboard);
-            score += positionValues[squareIndex];
+            score += positionTables.GetPieceTableValue(0, pieceIndex, team, squareIndex);
         }
         return score;
     }
