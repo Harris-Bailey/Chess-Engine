@@ -91,7 +91,9 @@ public readonly struct Move {
     }
 
     public static bool operator ==(Move move1, Move move2) {
-        return move1.startingSquare == move2.startingSquare && move1.targetSquare == move2.targetSquare && !move1.isNullMove && !move2.isNullMove && move1.specialMoveType == move2.specialMoveType;
+        if (move1.isNullMove || move2.isNullMove)
+            return false;
+        return move1.startingSquare == move2.startingSquare && move1.targetSquare == move2.targetSquare && move1.specialMoveType == move2.specialMoveType;
     }
 
     public static bool operator !=(Move move1, Move move2) {
