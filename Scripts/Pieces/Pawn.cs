@@ -12,14 +12,15 @@ public class Pawn : Piece {
     private int lastRankNum;
     private int startingRankNum;
     
-    public Pawn(Team team, int squareIndex, int yPosition) : base(team, squareIndex) {
+    public Pawn(Team team, int squareIndex) : base(team, squareIndex) {
         direction = team == Team.White ? MovementDirection.MovingUpwards : MovementDirection.MovingDownwards;
         int startingRank = direction == MovementDirection.MovingUpwards ? 1 : 6;
         int lastRank = direction == MovementDirection.MovingDownwards ? 0 : Board.Dimensions - 1;
         startingRankNum = startingRank;
         lastRankNum = lastRank;
         
-        if (yPosition != startingRankNum)
+        Coordinate squareCoord = new Coordinate(squareIndex);
+        if (squareCoord.y != startingRankNum)
             SetToMoved(true);
     }
 

@@ -137,7 +137,7 @@ public class Board {
             // ignore the null warning since the piece can't be null if it enters this if statement
             # nullable disable
             capturedPiece = CurrentEnPassantPawn;
-            RemovePieceAt(CurrentEnPassantPawn.SquareIndex);
+            RemovePiece(CurrentEnPassantPawn);
             # nullable enable
         }
         else if (move.specialMoveType == Move.SpecialMoveType.CastlingQueenside) {
@@ -178,29 +178,32 @@ public class Board {
         else if (move.IsPromotion) {
             Piece pawnUpgrading = Pieces[move.startingSquare];
             promotedPawn = pawnUpgrading;
-            RemovePieceInBitboards(pawnUpgrading);
-            char pieceSymbol = ' ';
+            RemoveInBitboards(pawnUpgrading);
+            
+            // this is so ugly
+            BitboardIndexes pieceIndex = (BitboardIndexes)(-1);
             switch (move.specialMoveType) {
                 case Move.SpecialMoveType.PromoteToQueen:
-                    pieceSymbol = 'q';
+                    pieceIndex = BitboardIndexes.QueenIndex;
                     break;
                 case Move.SpecialMoveType.PromoteToRook:
-                    pieceSymbol = 'r';
+                    pieceIndex = BitboardIndexes.RookIndex;
                     break;
                 case Move.SpecialMoveType.PromoteToBishop:
-                    pieceSymbol = 'b';
+                    pieceIndex = BitboardIndexes.BishopIndex;
                     break;
                 case Move.SpecialMoveType.PromoteToKnight:
-                    pieceSymbol = 'n';
+                    pieceIndex = BitboardIndexes.KnightIndex;
                     break;
             }
-            Piece? piece = CreatePiece(pieceSymbol, pawnUpgrading.SquareIndex, pawnUpgrading.PieceTeam);
+            Piece? piece = CreatePiece(pieceIndex, pawnUpgrading.SquareIndex, pawnUpgrading.PieceTeam);
             if (piece != null)
                 Pieces[pawnUpgrading.SquareIndex] = piece;
         }
+        
         Piece pieceToMove = Pieces[startingSquare];
         if (capturedPiece != null) {
-            RemovePieceInBitboards(capturedPiece);
+            RemoveInBitboards(capturedPiece);
         }
         MovePiece(pieceToMove, startingSquare, targetSquare);
         GameState newState = new GameState(move, enPassantPawn, capturedPiece, promotedPawn, castlingAvailability, pieceToMove.HasMoved);
@@ -209,58 +212,7 @@ public class Board {
         pieceToMove.SetToMoved();
         (currentTeam, opponentTeam) = (opponentTeam, currentTeam);
     }
-
-    public void MovePiece(Piece piece, int startingSquare, int targetSquare) {
-        // there is nothing in the start square anymore
-        # nullable disable
-        Pieces[startingSquare] = null;
-        # nullable enable
-        // the target square now has the piece in it
-        Pieces[targetSquare] = piece;
-        piece.SquareIndex = targetSquare;
-        
-        
-        ref ulong pieceBitboard = ref pieceBitboards[GetPieceBitboardIndex(piece.ClassID, piece.PieceTeam)];
-        // removing the starting square from the bitboard
-        pieceBitboard &= ~(1ul << startingSquare);
-        // adding the new target square to the bitboard
-        pieceBitboard |= 1ul << targetSquare;
-        
-        ref ulong teamBitboard = ref teamBitboards[(int)piece.PieceTeam];
-        // removing the starting square from the bitboard
-        teamBitboard &= ~(1ul << startingSquare);
-        // adding the new target square to the bitboard
-        teamBitboard |= 1ul << targetSquare;
-    }
-
-    public void RemovePieceInBitboards(Piece piece) {       
-        ulong squareIndexRemoverMask = ~(1ul << piece.SquareIndex);
-        pieceBitboards[GetPieceBitboardIndex(piece.ClassID, piece.PieceTeam)] &= squareIndexRemoverMask;
-        pieceBitboards[(int)piece.PieceTeam] &= squareIndexRemoverMask;
-    }
-
-    public void AddPieceInBitboards(Piece piece) {
-        ulong squareBitboard = 1ul << piece.SquareIndex;
-        pieceBitboards[GetPieceBitboardIndex(piece.ClassID, piece.PieceTeam)] |= squareBitboard;
-        teamBitboards[(int)piece.PieceTeam] |= squareBitboard;
-    }
-
-    public void RemovePieceAt(int squareIndex) {
-        RemovePieceInBitboards(Pieces[squareIndex]);
-        
-        # nullable disable
-        Pieces[squareIndex] = null;
-        # nullable enable
-    }
-
-    public void AddPieceAt(Piece piece, int squareIndex) {
-        Pieces[squareIndex] = piece;
-        
-        AddPieceInBitboards(piece);
-    }
-
-    // this is majorly for the AI player but still can be used for things like
-    // seeing the move history
+    
     public void UndoMove() {
         if (gameStates.Count == 0)
             return;
@@ -313,10 +265,13 @@ public class Board {
                 Environment.Exit(0);
                 return;
             }
-            Piece promotedPiece = Pieces[previousMove.targetSquare];
-            RemovePieceInBitboards(promotedPiece);
-            Pieces[previousMove.targetSquare] = previousState.PromotedPawn;
-            AddPieceInBitboards(previousState.PromotedPawn);
+            Piece piece = Pieces[previousMove.targetSquare];
+            Piece? promotedPawn = previousState.PromotedPawn;
+            
+            RemoveInBitboards(piece);
+            // set it to target square since it will move the piece from the target square back to the start square
+            Pieces[previousMove.targetSquare] = promotedPawn;
+            AddInBitboards(promotedPawn);
         }
         Piece pieceToMove = Pieces[previousMove.targetSquare];
 
@@ -326,6 +281,57 @@ public class Board {
         }
         pieceToMove.SetMoved(previousState.PieceMovedBefore);
         (currentTeam, opponentTeam) = (opponentTeam, currentTeam);
+    }
+
+    public void MovePiece(Piece piece, int startingSquare, int targetSquare) {       
+        // there is nothing in the start square anymore
+        # nullable disable
+        Pieces[startingSquare] = null;
+        # nullable enable
+        // the target square now has the piece in it
+        Pieces[targetSquare] = piece;
+        piece.SquareIndex = targetSquare;
+        
+        RemoveInBitboards(startingSquare, piece.ClassID, piece.PieceTeam);
+        AddInBitboards(targetSquare, piece.ClassID, piece.PieceTeam);
+    }
+
+    public void RemoveInBitboards(int squareIndex, int pieceID, Team pieceTeam) {       
+        ulong squareIndexRemoverMask = ~(1ul << squareIndex);
+        pieceBitboards[GetPieceBitboardIndex(pieceID, pieceTeam)] &= squareIndexRemoverMask;
+        teamBitboards[(int)pieceTeam] &= squareIndexRemoverMask;
+    }
+    
+    public void RemoveInBitboards(Piece piece) {       
+        ulong squareIndexRemoverMask = ~(1ul << piece.SquareIndex);
+        pieceBitboards[GetPieceBitboardIndex(piece.ClassID, piece.PieceTeam)] &= squareIndexRemoverMask;
+        teamBitboards[(int)piece.PieceTeam] &= squareIndexRemoverMask;
+    }
+
+    public void AddInBitboards(int squareIndex, int pieceID, Team pieceTeam) {
+        ulong squareBitboard = 1ul << squareIndex;
+        pieceBitboards[GetPieceBitboardIndex(pieceID, pieceTeam)] |= squareBitboard;
+        teamBitboards[(int)pieceTeam] |= squareBitboard;
+    }
+    
+    public void AddInBitboards(Piece piece) {
+        ulong squareBitboard = 1ul << piece.SquareIndex;
+        pieceBitboards[GetPieceBitboardIndex(piece.ClassID, piece.PieceTeam)] |= squareBitboard;
+        teamBitboards[(int)piece.PieceTeam] |= squareBitboard;
+    }
+
+    public void RemovePiece(Piece piece) {
+        RemoveInBitboards(piece);
+        
+        # nullable disable
+        Pieces[piece.SquareIndex] = null;
+        # nullable enable
+    }
+
+    public void AddPieceAt(Piece piece, int squareIndex) {
+        Pieces[squareIndex] = piece;
+        
+        AddInBitboards(piece);
     }
 
     public King GetTeamsKing(Team team) {
@@ -441,24 +447,15 @@ public class Board {
         };
     }
     
-    public static Piece? CreatePiece(char pieceSymbol, int squareIdx, Team piecesTeam) {
-        pieceSymbol = char.ToLower(pieceSymbol);
-        switch (pieceSymbol) {
-            case 'p':
-                Coordinate coord = new Coordinate(squareIdx);
-                return new Pawn(piecesTeam, squareIdx, coord.y);
-            case 'b':
-                return new Bishop(piecesTeam, squareIdx);
-            case 'n':
-                return new Knight(piecesTeam, squareIdx);
-            case 'r':
-                return new Rook(piecesTeam, squareIdx);
-            case 'q':
-                return new Queen(piecesTeam, squareIdx);
-            case 'k':
-                return new King(piecesTeam, squareIdx);
-            default:
-                return null;
-        }
+    public static Piece? CreatePiece(BitboardIndexes pieceIndex, int squareIdx, Team piecesTeam) {
+        return pieceIndex switch {
+            BitboardIndexes.PawnIndex   => new   Pawn(piecesTeam, squareIdx),
+            BitboardIndexes.BishopIndex => new Bishop(piecesTeam, squareIdx),
+            BitboardIndexes.KnightIndex => new Knight(piecesTeam, squareIdx),
+            BitboardIndexes.RookIndex   => new   Rook(piecesTeam, squareIdx),
+            BitboardIndexes.QueenIndex  => new  Queen(piecesTeam, squareIdx),
+            BitboardIndexes.KingIndex   => new   King(piecesTeam, squareIdx),
+            _ => null,
+        };
     }
 }
