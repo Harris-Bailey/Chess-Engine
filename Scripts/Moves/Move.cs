@@ -64,7 +64,7 @@ public readonly struct Move {
         int ASCIIStartRowIndex = Convert.ToInt32('a');
         char columnLetter = Convert.ToChar(squareCoord.x + ASCIIStartRowIndex);
         
-        return $"{columnLetter}{squareCoord.y}";
+        return $"{columnLetter}{squareCoord.y + 1}";
     }
 
     private readonly string GetPromotionString() {
