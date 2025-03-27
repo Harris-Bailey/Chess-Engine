@@ -6,7 +6,7 @@ public class UCIChessEngine {
     private MoveGenerator moveGenerator;
     private Bot bot;
     FENHandler positionHandler;
-    public Move previousMove { get; private set; }
+    public Move chosenMove { get; private set; }
     public readonly string name;
     private IEvaluation evaluator;
 
@@ -17,7 +17,7 @@ public class UCIChessEngine {
         this.name = name;
         this.evaluator = evaluator;
 
-        bot = new NegamaxBot(board, moveGenerator, OnMoveChosen, 5, evaluator);
+        bot = new NegamaxBot(board, moveGenerator, OnMoveChosen, 7, evaluator);
 
         positionHandler = new FENHandler(board, moveGenerator);
         positionHandler.Initialise();
@@ -33,7 +33,7 @@ public class UCIChessEngine {
     }
     
     public void RunAutomatically(string FENString) {
-        previousMove = Move.NullMove;
+        chosenMove = Move.NullMove;
         positionHandler.Initialise(FENString);
         bot.StartProcessing();
     }
@@ -104,24 +104,15 @@ public class UCIChessEngine {
 
         if (indexOfMoves > 0) {
             string[] requestedMoves = message[(indexOfMoves + movesCommand.Length) ..].Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-            for (int i = 0; i < requestedMoves.Length; i++) {
-                Move moveToMake = new Move(requestedMoves[i]);
-                Move[] actualMoves = moveGenerator.UpdateAllPieces();
-                Piece pieceAtStartSquare = board.pieces[moveToMake.startingSquare];
-                // Console.WriteLine(moveToMake);
-                if (moveToMake.isNullMove || pieceAtStartSquare == null)
-                    return;
-                bool moveFound = false;
-                for (int j = 0; j < pieceAtStartSquare.NumMoves; j++) {
-                    Move move = pieceAtStartSquare.GetMove(actualMoves, j);
-                    if (move.targetSquare == moveToMake.targetSquare) {
-                        moveToMake = move;
-                        moveFound = true;
-                    }
+            foreach (string requestedMove in requestedMoves) {
+                int startSquare = Move.MoveNotationToSquare(requestedMove[0..2]);
+                int targetSquare = Move.MoveNotationToSquare(requestedMove[2..4]);
+                Move[] legalMoves = moveGenerator.UpdateAllPieces();
+                
+                foreach (Move move in legalMoves) {
+                    if (move.startingSquare == startSquare && move.targetSquare == targetSquare)
+                        board.MakeMove(move);
                 }
-                if (!moveFound)
-                    return;
-                board.MakeMove(moveToMake);
             }
         }
         
@@ -129,7 +120,7 @@ public class UCIChessEngine {
     }
 
     private void OnMoveChosen(Move move) {
-        previousMove = move;
+        chosenMove = move;
         Console.WriteLine($"bestmove {move}");
     }
 }
