@@ -59,7 +59,7 @@ public class Evaluation_V6_Advanced : IEvaluation {
         score += GetPositionValues(teamKingBitboard, BitboardIndexes.KingIndex, team);
         
         // go through every rank / file
-        for (int i = 0; i < Board.dimensions; i++) {            
+        for (int i = 0; i < Board.Dimensions; i++) {            
             int numPawnsOnFile = BitboardHelper.GetPieceCount(teamPawnBitboard, fileMasks[i]);
             if (numPawnsOnFile > 0) {
                 score += GetPawnScore(board, teamPawnBitboard, opponentPiecesWithoutPawns, opponentPawnBitboard, numPawnsOnFile, i);
@@ -109,7 +109,7 @@ public class Evaluation_V6_Advanced : IEvaluation {
             hasPawnOnLeftFile = BitboardHelper.BitboardContainsAnyFromMask(teamPawnBitboard, fileMaskOnLeft);
             surroundingFilesMask |= fileMaskOnLeft;
         }
-        if (fileIndex < Board.dimensions - 1) {
+        if (fileIndex < Board.Dimensions - 1) {
             ulong fileMaskOnRight = fileMasks[fileIndex + 1];
             hasPawnOnRightFile = BitboardHelper.BitboardContainsAnyFromMask(teamPawnBitboard, fileMaskOnRight);
             surroundingFilesMask |= fileMaskOnRight;
@@ -124,7 +124,7 @@ public class Evaluation_V6_Advanced : IEvaluation {
         ulong teamPawnsInFileMask = teamPawnBitboard & fileMask;
         while (teamPawnsInFileMask != 0) {
             int pawnSquareIndex = BitboardHelper.PopLeastSignificantBit(ref teamPawnsInFileMask);
-            if (board.pieces[pawnSquareIndex] is not Pawn pawn) {
+            if (board.Pieces[pawnSquareIndex] is not Pawn pawn) {
                 // if everything runs correctly, then this should never get executed
                 Console.WriteLine("Why is there a different piece in the pawn bitboard?");
                 Console.WriteLine("This is being printed from Evaluation_V6_Evaluation on line 148!");
@@ -132,7 +132,7 @@ public class Evaluation_V6_Advanced : IEvaluation {
                 return 0;
             }
             Pawn.MovementDirection direction = pawn.direction;
-            Coordinate pawnCoord = Board.ConvertSquareIndexToCoord(pawnSquareIndex);
+            Coordinate pawnCoord = new Coordinate(pawnSquareIndex);
             // this section offsets the file mask so that instead of it being the whole file, it just keeps the squares infront of the pawn
             // if it's the en passant pawn though, then we have to include the rank of the pawn because it can be captured on that rank
             // e.g. assuming this is an upwards moving pawn:
@@ -154,7 +154,7 @@ public class Evaluation_V6_Advanced : IEvaluation {
             int totalPenaltyForHostileBlocker = 0;
             if (direction == Pawn.MovementDirection.MovingUpwards) {
                 int rankToShiftTo = pawnIsEnPassantPawn ? pawnCoord.y : pawnCoord.y + 1;
-                surroundingFilesMask <<= rankToShiftTo * Board.dimensions;
+                surroundingFilesMask <<= rankToShiftTo * Board.Dimensions;
 
                 // if the pawn is moving upwards and is on a higher rank, the higher the reward is
                 totalRewardForPassedPawn = passedPawnRewardPerRank * (pawnCoord.y + 1);
@@ -163,8 +163,8 @@ public class Evaluation_V6_Advanced : IEvaluation {
                 totalPenaltyForHostileBlocker = hostilePieceBlockingPassedPawnPenalty * (pawnCoord.y + 1);
             }
             else if (direction == Pawn.MovementDirection.MovingDownwards) {
-                int rankToShiftTo = pawnIsEnPassantPawn ? Board.dimensions - (pawnCoord.y + 1) : Board.dimensions - pawnCoord.y;
-                surroundingFilesMask <<= rankToShiftTo * Board.dimensions;
+                int rankToShiftTo = pawnIsEnPassantPawn ? Board.Dimensions - (pawnCoord.y + 1) : Board.Dimensions - pawnCoord.y;
+                surroundingFilesMask <<= rankToShiftTo * Board.Dimensions;
                 
                 // if the pawn is moving downwards and is on a lower rank, the higher the reward is
                 totalRewardForPassedPawn = passedPawnRewardPerRank * (7 - pawnCoord.y + 1);
@@ -199,17 +199,17 @@ public class Evaluation_V6_Advanced : IEvaluation {
         ulong bishopBitboardCopy = teamBishopBitboard;
         while (bishopBitboardCopy != 0) {
             int bishopSquareIndex = BitboardHelper.PopLeastSignificantBit(ref bishopBitboardCopy);
-            Coordinate bishopCoord = Board.ConvertSquareIndexToCoord(bishopSquareIndex);
+            Coordinate bishopCoord = new Coordinate(bishopSquareIndex);
             if (bishopCoord.x - 1 >= 0 && bishopCoord.y - 1 >= 0) {
                 diagonalSquareMask |= 1ul << (bishopSquareIndex + CompassDirections.BottomLeft);
             }
-            if (bishopCoord.x + 1 < Board.dimensions && bishopCoord.y - 1 >= 0) {
+            if (bishopCoord.x + 1 < Board.Dimensions && bishopCoord.y - 1 >= 0) {
                 diagonalSquareMask |= 1ul << (bishopSquareIndex + CompassDirections.BottomRight);
             }
-            if (bishopCoord.x - 1 >= 0 && bishopCoord.y + 1 < Board.dimensions) {
+            if (bishopCoord.x - 1 >= 0 && bishopCoord.y + 1 < Board.Dimensions) {
                 diagonalSquareMask |= 1ul << (bishopSquareIndex + CompassDirections.TopLeft);
             }
-            if (bishopCoord.x + 1 < Board.dimensions && bishopCoord.y + 1 < Board.dimensions) {
+            if (bishopCoord.x + 1 < Board.Dimensions && bishopCoord.y + 1 < Board.Dimensions) {
                 diagonalSquareMask |= 1ul << (bishopSquareIndex + CompassDirections.TopRight);
             }
             

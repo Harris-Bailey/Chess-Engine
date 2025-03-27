@@ -39,43 +39,35 @@ public readonly struct Move {
         this.targetSquare = targetSquare;
         this.specialMoveType = flag;
     }
+    
+    public static Move NullMove => new Move();
+    
+    public static int MoveNotationToSquare(string moveNotation) {
+        if (moveNotation.Length != 2) 
+            return -1;
+        if (!char.IsNumber(moveNotation[1]))
+            return -1;
 
-    public Move(string moveInChessNotation) {
-        startingSquare = Board.ConvertChessNotationToSquare(moveInChessNotation[0..2]);
-        targetSquare = Board.ConvertChessNotationToSquare(moveInChessNotation[2..4]);
-
-        if (startingSquare == -1 || targetSquare == -1) {
-            this = NullMove;
-            return;
-        }
+        char columnInChessNotation = moveNotation.ToLower()[0];
+        int ASCIIStartRowIndex = Convert.ToInt32('a');
+        int columnIndex = Convert.ToInt32(columnInChessNotation) - ASCIIStartRowIndex;
         
-        if (moveInChessNotation.Length > 4) {
-            switch (moveInChessNotation[4..]) {
-                case "q":
-                case "=q":
-                    specialMoveType = SpecialMoveType.PromoteToQueen;
-                    break;
-                case "r":
-                case "=r":
-                    specialMoveType = SpecialMoveType.PromoteToRook;
-                    break;
-                case "b":
-                case "=b":
-                    specialMoveType = SpecialMoveType.PromoteToBishop;
-                    break;
-                case "n":
-                case "=n":
-                    specialMoveType = SpecialMoveType.PromoteToKnight;
-                    break;
-            }
-        }
+        int rowIndex = int.Parse(moveNotation[1].ToString()) - 1;
+        return columnIndex + rowIndex * Board.Dimensions;
+    }
+    
+    public static string SquareToMoveNotation(int squareIndex) {
+        if (!Board.SquareOnBoard(squareIndex))
+            return string.Empty;
+        Coordinate squareCoord = new Coordinate(squareIndex);
+        
+        int ASCIIStartRowIndex = Convert.ToInt32('a');
+        char columnLetter = Convert.ToChar(squareCoord.x + ASCIIStartRowIndex);
+        
+        return $"{columnLetter}{squareCoord.y}";
     }
 
-    public override string ToString() {
-        return $"{Board.ConvertSquareToChessNotation(startingSquare)}{Board.ConvertSquareToChessNotation(targetSquare)}{GetPromotionString()}";
-    }
-
-    private string GetPromotionString() {
+    private readonly string GetPromotionString() {
         switch (specialMoveType) {
             case SpecialMoveType.PromoteToQueen:
                 return "=q";
@@ -86,7 +78,7 @@ public readonly struct Move {
             case SpecialMoveType.PromoteToKnight:
                 return "=n";
             default:
-                return "";
+                return string.Empty;
         }
     }
 
@@ -109,6 +101,8 @@ public readonly struct Move {
     public override readonly int GetHashCode() {
         return base.GetHashCode();
     }
-
-    public static Move NullMove => new Move();
+    
+    public override readonly string ToString() {
+        return $"{SquareToMoveNotation(startingSquare)}{SquareToMoveNotation(targetSquare)}{GetPromotionString()}";
+    }
 }

@@ -7,7 +7,7 @@ public class Pawn : Piece {
         MovingUpwards = 1
     }
 
-    public override int InstanceID => (int)BitboardIndexes.PawnIndex;
+    public override int ClassID => (int)BitboardIndexes.PawnIndex;
     public MovementDirection direction { get; private set; }
     private int lastRankNum;
     private int startingRankNum;
@@ -15,7 +15,7 @@ public class Pawn : Piece {
     public Pawn(Team team, int squareIndex, int yPosition) : base(team, squareIndex) {
         direction = team == Team.White ? MovementDirection.MovingUpwards : MovementDirection.MovingDownwards;
         int startingRank = direction == MovementDirection.MovingUpwards ? 1 : 6;
-        int lastRank = direction == MovementDirection.MovingDownwards ? 0 : Board.dimensions - 1;
+        int lastRank = direction == MovementDirection.MovingDownwards ? 0 : Board.Dimensions - 1;
         startingRankNum = startingRank;
         lastRankNum = lastRank;
         
@@ -27,7 +27,7 @@ public class Pawn : Piece {
         ulong opponentPiecesBitboard = board.GetTeamBitboard(Board.GetOpposingTeam(PieceTeam));
         ulong allPiecesBitboard = board.GetAllPiecesBitboard();
 
-        Coordinate squareCoord = Board.ConvertSquareIndexToCoord(SquareIndex);
+        Coordinate squareCoord = new Coordinate(SquareIndex);
         King friendlyKing = board.GetTeamsKing(PieceTeam);
         
         int singlePushTargetSquareIndex = SquareIndex + CompassDirections.Up * (int)direction;

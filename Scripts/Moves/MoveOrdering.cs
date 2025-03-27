@@ -20,9 +20,9 @@ public class MoveOrdering {
         for (int i = 0; i < moves.Length; i++) {
             Move move = moves[i];
             int score = 0;
-            Piece piece = board.pieces[move.startingSquare];
-            Piece? capturedPiece = board.pieces[move.targetSquare];
-            ulong opponentAttacks = board.GetSquaresAttackedByNextTeam(board.currentTeam);
+            Piece piece = board.Pieces[move.startingSquare];
+            Piece? capturedPiece = board.Pieces[move.targetSquare];
+            ulong opponentAttacks = board.GetSquaresAttacked(board.opponentTeam);
 
             if (capturedPiece != null) {
                 int capturingScore = GetPieceValue(capturedPiece) - GetPieceValue(piece);

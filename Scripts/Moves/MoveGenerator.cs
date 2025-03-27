@@ -46,7 +46,7 @@ public class MoveGenerator {
     public void GenerateOpponentsAttackedSquares(King currentTeamsKing, ulong opponentTeamsBitboard) {            
         while (opponentTeamsBitboard != 0) {
             int squareIndex = BitboardHelper.PopLeastSignificantBit(ref opponentTeamsBitboard);
-            board.pieces[squareIndex].GenerateSquaresAttacked(board, currentTeamsKing);
+            board.Pieces[squareIndex].GenerateSquaresAttacked(board, currentTeamsKing);
         }
     }
 
@@ -68,7 +68,7 @@ public class MoveGenerator {
         ulong friendlyPiecesCopy = friendlyPiecesBitboard ^ (1ul << friendlyKing.SquareIndex);
         while (friendlyPiecesCopy != 0) {
             int pieceSquareIndex = BitboardHelper.PopLeastSignificantBit(ref friendlyPiecesCopy);
-            Piece piece = board.pieces[pieceSquareIndex];
+            Piece piece = board.Pieces[pieceSquareIndex];
             piece.GenerateMoves(board, moves, ref movesCount, capturesOnlyMask);
         }
         return moves[..movesCount].ToArray();

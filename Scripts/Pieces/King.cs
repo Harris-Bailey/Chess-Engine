@@ -1,7 +1,7 @@
 namespace Chess; 
 
 public class King : Piece {
-    public override int InstanceID => (int)BitboardIndexes.KingIndex;
+    public override int ClassID => (int)BitboardIndexes.KingIndex;
     public ulong checkBitboard;
     public bool isChecked;
     public bool isDoubleChecked;
@@ -42,7 +42,7 @@ public class King : Piece {
         if (capturesOnly || HasMoved || isChecked)
             return;
         ulong friendlyRookBitboard = board.GetPieceBitboard(BitboardIndexes.RookIndex, PieceTeam);
-        Coordinate kingCoord = Board.ConvertSquareIndexToCoord(SquareIndex);
+        Coordinate kingCoord = new Coordinate(SquareIndex);
         if (canCastleQueenside) {
             ulong spacesBetweenKingAndRook = 0b00001110ul << (kingCoord.y * 8);
             ulong affectedSquaresByAttacks = 0b00001100ul << (kingCoord.y * 8);
@@ -72,7 +72,7 @@ public class King : Piece {
             return false;
         
         # nullable disable
-        Rook castlingRook = board.pieces[rookIntendedPosition] as Rook;
+        Rook castlingRook = board.Pieces[rookIntendedPosition] as Rook;
         if (castlingRook.HasMoved)
             return false;
         return true;

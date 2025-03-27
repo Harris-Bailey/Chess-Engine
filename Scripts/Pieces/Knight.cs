@@ -1,7 +1,7 @@
 namespace Chess;
  
 public class Knight : Piece {
-    public override int InstanceID => (int)BitboardIndexes.KnightIndex;
+    public override int ClassID => (int)BitboardIndexes.KnightIndex;
     
     public Knight(Team team, int squareIndex) : base(team, squareIndex) { }
 

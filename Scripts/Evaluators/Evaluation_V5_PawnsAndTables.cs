@@ -50,7 +50,7 @@ public class Evaluation_V5_PawnsAndTables : IEvaluation {
         score += GetPositionValues(teamQueenBitboard, BitboardIndexes.QueenIndex, team);
         score += GetPositionValues(teamKingBitboard, BitboardIndexes.KingIndex, team);
         
-        for (int i = 0; i < Board.dimensions; i++) {
+        for (int i = 0; i < Board.Dimensions; i++) {
             // ulong shiftedRankMask = rankMask << (i * Board.dimensions);
             // ulong shiftedFileMask = fileMask << i;
             
@@ -108,7 +108,7 @@ public class Evaluation_V5_PawnsAndTables : IEvaluation {
             if (pawnIsOnLeftFile)
                 hasProtectivePawns = true;
         }
-        if (fileIndex < Board.dimensions - 1) {
+        if (fileIndex < Board.Dimensions - 1) {
             bool pawnIsOnRightFile = BitboardHelper.BitboardContainsAnyFromMask(teamPawnBitboard, fileMasks[fileIndex + 1]);
             if (pawnIsOnRightFile)
                 hasProtectivePawns = true;
@@ -128,19 +128,19 @@ public class Evaluation_V5_PawnsAndTables : IEvaluation {
             surroundingFilesMask |= fileMask << -1;
         }
         // adding the right file to the mask if it's inside the bounds
-        if (fileIndex < Board.dimensions) {
+        if (fileIndex < Board.Dimensions) {
             surroundingFilesMask |= fileMask << 1;
         }
         int[] pawnSquareIndexes = BitboardHelper.GetSquareIndexesFromBitboard(teamPawnBitboard & fileMask);
         foreach (int pawnSquareIndex in pawnSquareIndexes) {
-            if (board.pieces[pawnSquareIndex] is not Pawn pawn) {
+            if (board.Pieces[pawnSquareIndex] is not Pawn pawn) {
                 // if everything runs correctly, then this should never get executed
                 Console.WriteLine("Why is there a different piece in the pawn bitboard?");
                 Environment.Exit(0);
                 return 0;
             }
             Pawn.MovementDirection direction = pawn.direction;
-            Coordinate pawnCoord = Board.ConvertSquareIndexToCoord(pawnSquareIndex);
+            Coordinate pawnCoord = new Coordinate(pawnSquareIndex);
             // this section offsets the file mask so that instead of it being the whole file, it just keeps the squares infront of the pawn
             // if it's the en passant pawn though, then we have to include the rank of the pawn because it can be captured on that rank
             // e.g. assuming this is an upwards moving pawn:
@@ -158,11 +158,11 @@ public class Evaluation_V5_PawnsAndTables : IEvaluation {
             bool pawnIsEnPassantPawn = pawn == board.CurrentEnPassantPawn;
             if (direction == Pawn.MovementDirection.MovingUpwards) {
                 int rankToShiftTo = pawnIsEnPassantPawn ? pawnCoord.y : pawnCoord.y + 1;
-                surroundingFilesMask <<= rankToShiftTo * Board.dimensions;
+                surroundingFilesMask <<= rankToShiftTo * Board.Dimensions;
             }
             else if (direction == Pawn.MovementDirection.MovingDownwards) {
-                int rankToShiftTo = pawnIsEnPassantPawn ? Board.dimensions - (pawnCoord.y + 1) : Board.dimensions - pawnCoord.y;
-                surroundingFilesMask >>= rankToShiftTo * Board.dimensions;
+                int rankToShiftTo = pawnIsEnPassantPawn ? Board.Dimensions - (pawnCoord.y + 1) : Board.Dimensions - pawnCoord.y;
+                surroundingFilesMask >>= rankToShiftTo * Board.Dimensions;
             }
             bool opponentPawnsInMask = (opponentPawnBitboard & surroundingFilesMask) != 0;
             if (!opponentPawnsInMask) {
@@ -174,7 +174,7 @@ public class Evaluation_V5_PawnsAndTables : IEvaluation {
                 }
                 else if (direction == Pawn.MovementDirection.MovingDownwards) {
                     // if the pawn is moving downwards and is on a lower rank, the higher the reward is
-                    score += (passedPawnRewardPerRank * Board.dimensions) - passedPawnRewardPerRank * (pawnCoord.y + 1);
+                    score += (passedPawnRewardPerRank * Board.Dimensions) - passedPawnRewardPerRank * (pawnCoord.y + 1);
                 }
             }
         }

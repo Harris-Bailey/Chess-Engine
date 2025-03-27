@@ -36,14 +36,14 @@ public class FENHandler {
         Piece[] pieces = new Piece[64];
         string piecesLayout = FENRecord[0];
         int rowNumber = 8;
-        for (int arrIdx = 0, squareIdx = Board.dimensions * (rowNumber - 1); arrIdx < piecesLayout.Length; arrIdx++) {
+        for (int arrIdx = 0, squareIdx = Board.Dimensions * (rowNumber - 1); arrIdx < piecesLayout.Length; arrIdx++) {
             char symbol = piecesLayout[arrIdx];
             if (char.IsNumber(symbol)) {
                 squareIdx += int.Parse(symbol.ToString());
                 continue;
             }
             if (symbol == '/') {
-                squareIdx = Board.dimensions * (--rowNumber - 1);
+                squareIdx = Board.Dimensions * (--rowNumber - 1);
                 continue;
             }
 
@@ -58,10 +58,10 @@ public class FENHandler {
     
     public string GetFENString() {
         string FEN = string.Empty;
-        for (int y = Board.dimensions - 1; y >= 0; y--) {
+        for (int y = Board.Dimensions - 1; y >= 0; y--) {
             int numBlankSpaces = 0;
-            for (int x = 0; x < Board.dimensions; x++) {
-                Piece piece = board.pieces[x + y * Board.dimensions];
+            for (int x = 0; x < Board.Dimensions; x++) {
+                Piece piece = board.Pieces[x + y * Board.Dimensions];
                 if (piece == null) {
                     numBlankSpaces++;
                     continue;
@@ -70,7 +70,7 @@ public class FENHandler {
                     FEN += numBlankSpaces;
                     numBlankSpaces = 0;
                 }
-                FEN += board.pieces[x + y * Board.dimensions].ToString();
+                FEN += board.Pieces[x + y * Board.Dimensions].ToString();
             }
             if (numBlankSpaces > 0)
                 FEN += numBlankSpaces;
@@ -145,13 +145,13 @@ public class FENHandler {
             return;
         }
 
-        int enPassantCaptureSquare = Board.ConvertChessNotationToSquare(FENRecord[3]);
+        int enPassantCaptureSquare = Move.MoveNotationToSquare(FENRecord[3]);
         if (enPassantCaptureSquare == -1)
             return;
             
         // if the current team is white, then black was the previous team that enabled en passant and they push pawns downwards, hence -1
         int pawnDirection = board.currentTeam == Team.White ? -1 : 1;
-        if (board.pieces[enPassantCaptureSquare + CompassDirections.Up * pawnDirection] is not Pawn enPassantPawn)
+        if (board.Pieces[enPassantCaptureSquare + CompassDirections.Up * pawnDirection] is not Pawn enPassantPawn)
             return;
         
 
@@ -178,39 +178,17 @@ public class FENHandler {
         if (indexOfMoves == -1) {
             return;
         }
-        for (int i = indexOfMoves + 1; i < FENRecord.Length; i++) {
-            string moveInChessNotation = FENRecord[i];
-            Move move = new Move(moveInChessNotation);
-            // Console.WriteLine(move);
-            Move[] moves = moveGenerator.UpdateAllPieces();
-            Piece? pieceToMove = board.pieces[move.startingSquare];
-            Move actualMove = GetMove(pieceToMove, moves, move);
-            if (actualMove == Move.NullMove) {
-                Console.WriteLine($"Can't perform {move}");
-                return;
-            }
-            board.MakeMove(actualMove);
-        }
-    }
-
-    private Move GetMove(Piece? pieceTryingToBeMoved, Move[] moves, Move moveTryingToBeMade) {
-        if (pieceTryingToBeMoved == null)
-            return Move.NullMove;
-        for (int i = 0; i < pieceTryingToBeMoved.NumMoves; i++) {
-            Move move = pieceTryingToBeMoved.GetMove(moves, i);
-            // shouldn't ever be null with it using the numMoves variable
-            // as well as using the 'GetMove' method on the piece but
-            // I'm using it just in case :)
-            if (move.isNullMove)
-                break;
-            if (move.targetSquare == moveTryingToBeMade.targetSquare) {
-                if (moveTryingToBeMade.IsPromotion && moveTryingToBeMade.specialMoveType != move.specialMoveType) {
-                    continue;
-                }
-                return move;
+        string[] requestedMoves = FENRecord[(indexOfMoves + 1)..];
+        foreach (string requestedMove in requestedMoves) {
+            int startSquare = Move.MoveNotationToSquare(requestedMove[0..2]);
+            int targetSquare = Move.MoveNotationToSquare(requestedMove[2..4]);
+            
+            Move[] legalMoves = moveGenerator.UpdateAllPieces();
+            foreach (Move move in legalMoves) {
+                if (move.startingSquare == startSquare && move.targetSquare == targetSquare)
+                    board.MakeMove(move);
             }
         }
-        return Move.NullMove;
     }
     
     
@@ -240,10 +218,10 @@ public class FENHandler {
     
     public static string GetFENPieces(Board board) {
         string FEN = string.Empty;
-        for (int y = Board.dimensions - 1; y >= 0; y--) {
+        for (int y = Board.Dimensions - 1; y >= 0; y--) {
             int numBlankSpaces = 0;
-            for (int x = 0; x < Board.dimensions; x++) {
-                Piece piece = board.pieces[x + y * Board.dimensions];
+            for (int x = 0; x < Board.Dimensions; x++) {
+                Piece piece = board.Pieces[x + y * Board.Dimensions];
                 if (piece == null) {
                     numBlankSpaces++;
                     continue;
@@ -252,7 +230,7 @@ public class FENHandler {
                     FEN += numBlankSpaces;
                     numBlankSpaces = 0;
                 }
-                FEN += board.pieces[x + y * Board.dimensions].ToString();
+                FEN += board.Pieces[x + y * Board.Dimensions].ToString();
             }
             if (numBlankSpaces > 0)
                 FEN += numBlankSpaces;

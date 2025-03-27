@@ -23,7 +23,7 @@ public static class MoveData {
             foreach (int direction in directions) {
                 attacks |= 1ul << (squareIndex + direction);
             }
-            Coordinate kingCoord = Board.ConvertSquareIndexToCoord(squareIndex);
+            Coordinate kingCoord = new Coordinate(squareIndex);
             
             // these switch statements remove the wrap-around which happens due to
             // adding each direction without considering the number of squares to the edge
@@ -61,11 +61,11 @@ public static class MoveData {
         };
         
         for (int squareIndex = 0; squareIndex < 64; squareIndex++) {
-            Coordinate squareCoord = Board.ConvertSquareIndexToCoord(squareIndex);
+            Coordinate squareCoord = new Coordinate(squareIndex);
             ulong attacks = 0;
             foreach (Coordinate moveCoord in knightDirections) {
                 Coordinate targetCoord = squareCoord + moveCoord;
-                if (targetCoord.x < 0 || targetCoord.x >= Board.dimensions | targetCoord.y < 0 || targetCoord.y >= Board.dimensions)
+                if (targetCoord.x < 0 || targetCoord.x >= Board.Dimensions | targetCoord.y < 0 || targetCoord.y >= Board.Dimensions)
                     continue;
                 attacks |= 1ul << targetCoord.ConvertToSquareIndex();
             }
@@ -76,7 +76,7 @@ public static class MoveData {
     private static void AssignPawnAttacks() {
         for (int squareIndex = 0; squareIndex < 64; squareIndex++) {
             PawnAttacks[squareIndex] = new ulong[2];
-            Coordinate squareCoord = Board.ConvertSquareIndexToCoord(squareIndex);
+            Coordinate squareCoord = new Coordinate(squareIndex);
 
             ulong validRowForAttacks = BitboardHelper.BottomRowMask << ((squareCoord.y + 1) * 8);
             int positiveDiagonalAttackSquareIndex = squareIndex + 9;

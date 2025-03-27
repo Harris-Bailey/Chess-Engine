@@ -149,7 +149,7 @@ public abstract class SlidingPiece : Piece {
             return false;
         
 #nullable disable
-        Pawn friendlyPawn = board.pieces[friendlyPawnSquareIndex] as Pawn;
+        Pawn friendlyPawn = board.Pieces[friendlyPawnSquareIndex] as Pawn;
         // the capture square is above or below the pawn's square index depending on its direction
         int enPassantCaptureSquare = friendlyPawnSquareIndex - CompassDirections.Up * (int)friendlyPawn.direction;
         // this will turn all bits on except for the capture square of the en passant pawn
@@ -159,7 +159,7 @@ public abstract class SlidingPiece : Piece {
         // get the opponent pawn
         int opponentPawnSquareIndex = BitboardHelper.GetLeastSignificantBit(opponentPawnMask);
         // pin the pawn so that it can no longer capture the en passant pawn
-        board.pieces[opponentPawnSquareIndex].Pin(enPassantRestrictionMask);
+        board.Pieces[opponentPawnSquareIndex].Pin(enPassantRestrictionMask);
         
         return true;
     }

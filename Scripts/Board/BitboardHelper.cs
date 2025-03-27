@@ -90,7 +90,7 @@ public static class BitboardHelper {
 
     public static int[] GetSquareIndexesFromBitboard(ulong bitboard) {
         int count = 0;
-        Span<int> squareIndexes = stackalloc int[Board.dimensions * Board.dimensions];
+        Span<int> squareIndexes = stackalloc int[Board.Dimensions * Board.Dimensions];
         while (bitboard != 0) {
             int squareIndex = BitOperations.TrailingZeroCount(bitboard);
             squareIndexes[count++] = squareIndex;
@@ -183,7 +183,7 @@ public static class BitboardHelper {
     }
     
     public static ulong GetAttackBitboard(int squareIndex, int direction) {
-        Coordinate squareCoord = Board.ConvertSquareIndexToCoord(squareIndex);
+        Coordinate squareCoord = new Coordinate(squareIndex);
         switch (direction) {
             case 8:
                 // if the square is on the board edge
@@ -242,7 +242,7 @@ public static class BitboardHelper {
     }
     
     public static ulong GetLegalAttacks(ulong attacksInDirection, int direction, int blockerSquareIndex) {
-        Coordinate blockerCoords = Board.ConvertSquareIndexToCoord(blockerSquareIndex);
+        Coordinate blockerCoords = new Coordinate(blockerSquareIndex);
         ulong legalAttacks;
         switch (direction) {
             case CompassDirections.Right:

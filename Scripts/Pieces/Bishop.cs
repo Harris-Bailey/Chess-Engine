@@ -1,7 +1,7 @@
 namespace Chess;
  
 public class Bishop : SlidingPiece {
-    public override int InstanceID => (int)BitboardIndexes.BishopIndex;
+    public override int ClassID => (int)BitboardIndexes.BishopIndex;
     protected override int[] directions { get; set; } = CompassDirections.Diagonals;
     protected override bool canMoveDiagonally => true;
     protected override bool canMoveCardinally => false;

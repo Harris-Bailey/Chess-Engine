@@ -6,7 +6,7 @@ public abstract class Piece {
     public readonly Team PieceTeam;
     public int SquareIndex;
     public bool HasMoved { get; private set; }
-    public abstract int InstanceID { get; }
+    public abstract int ClassID { get; }
     private int movesArrayStartIndex;
     private bool hasMovedBeforeStartup;
     protected ulong pinBitboard;
@@ -31,7 +31,7 @@ public abstract class Piece {
         int targetSquare = move.targetSquare;
         if (!Board.SquareOnBoard(targetSquare))
             return false;
-        Piece? capturingPiece = board.GetPieceAt(targetSquare);
+        Piece? capturingPiece = board.Pieces[targetSquare];
         if (capturingPiece != null) {
             if (capturingPiece != null && capturingPiece.PieceTeam == PieceTeam) {
                 return false;
