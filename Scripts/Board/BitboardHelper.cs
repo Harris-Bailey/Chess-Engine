@@ -4,12 +4,12 @@ namespace Chess;
 
 public static class BitboardHelper {
     
-    public const ulong BottomRowMask = 0b11111111;
-    public const ulong LeftColumnMask = 0x0101010101010101;
-    public const ulong TopRowMask = 0xFF00000000000000;
-    public const ulong RightColumnMask = 0x8080808080808080;
-    public const ulong PositiveDiagonalMask = 0b1000000001000000001000000001000000001000000001000000001000000001;
-    public const ulong NegativeDiagonalMask = 0b0000000100000010000001000000100000010000001000000100000010000000;
+    public const ulong BottomRowMask = 0b11111111ul;
+    public const ulong LeftColumnMask = 0x0101010101010101ul;
+    public const ulong TopRowMask = 0xFFul;
+    public const ulong RightColumnMask = 0x8080808080808080ul;
+    public const ulong PositiveDiagonalMask = 0b1000000001000000001000000001000000001000000001000000001000000001ul;
+    public const ulong NegativeDiagonalMask = 0b0000000100000010000001000000100000010000001000000100000010000000ul;
     public const ulong NotRank8 = ~(BottomRowMask << (7 * 8));
     public const ulong NotRank1 = ~BottomRowMask;
     public const ulong NotAFile = ~LeftColumnMask;
