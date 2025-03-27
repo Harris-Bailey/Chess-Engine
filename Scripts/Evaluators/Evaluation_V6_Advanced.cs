@@ -1,13 +1,14 @@
 namespace Chess;
 
 public class Evaluation_V6_Advanced : IEvaluation {
+    public int halfPawnValue = 50;
     public int pawnValue { get; set; } = 100;
     public int knightValue { get; set; } = 325;
     public int bishopValue { get; set; } = 340;
     public int rookValue { get; set; } = 500;
     public int queenValue { get; set; } = 900;
     
-    private const ulong fileMask = 0b0000000100000001000000010000000100000001000000010000000100000001;
+    private const ulong fileMask = BitboardHelper.LeftColumnMask;
     private ulong[] fileMasks = {
         fileMask,
         fileMask << 1,
@@ -51,6 +52,7 @@ public class Evaluation_V6_Advanced : IEvaluation {
         score += numTeamRooks * rookValue;
         score += numTeamQueens * queenValue;
         
+        // need to include a transition from early game to endgame
         score += GetPositionValues(teamPawnBitboard, BitboardIndexes.PawnIndex, team);
         score += GetPositionValues(teamBishopBitboard, BitboardIndexes.BishopIndex, team);
         score += GetPositionValues(teamKnightBitboard, BitboardIndexes.KnightIndex, team);
@@ -92,12 +94,6 @@ public class Evaluation_V6_Advanced : IEvaluation {
     
     public int GetPawnScore(Board board, ulong teamPawnBitboard, ulong opponentBitboardWithoutPawns, ulong opponentPawnBitboard, int numPawnsOnFile, int fileIndex) {
         int score = 0;
-        // doubled pawns
-        if (numPawnsOnFile > 1) {
-            int stackedPawnPenalty = 7;
-            // the more pawns on the same file, the more penalty
-            score -= stackedPawnPenalty * numPawnsOnFile;
-        }
 
         // the surrounding files of the current file, including the current file
         // for example the file may be file C and then the mask will include file B, C, and D
@@ -117,20 +113,29 @@ public class Evaluation_V6_Advanced : IEvaluation {
 
         // subtract the score if the pawn is isolated
         if (!hasPawnOnLeftFile && !hasPawnOnRightFile) {
-            int pawnIsolationPenalty = 2;
+            int pawnIsolationPenalty = halfPawnValue;
             score -= pawnIsolationPenalty;
         }
         
-        ulong teamPawnsInFileMask = teamPawnBitboard & fileMask;
-        while (teamPawnsInFileMask != 0) {
-            int pawnSquareIndex = BitboardHelper.PopLeastSignificantBit(ref teamPawnsInFileMask);
+        // doubled pawns
+        if (numPawnsOnFile > 1) {
+            int stackedPawnPenalty = 7;
+            // the more pawns on the same file, the more penalty
+            score -= stackedPawnPenalty * numPawnsOnFile;
+        }
+        // I don't know if this is right
+        // maybe I should just class it as one passed pawn if it's doubled?
+        else if (numPawnsOnFile == 1) {
+            int pawnSquareIndex = BitboardHelper.GetLeastSignificantBit(teamPawnBitboard & fileMasks[fileIndex]);
+            // Console.WriteLine(pawnSquareIndex);
             if (board.Pieces[pawnSquareIndex] is not Pawn pawn) {
                 // if everything runs correctly, then this should never get executed
                 Console.WriteLine("Why is there a different piece in the pawn bitboard?");
-                Console.WriteLine("This is being printed from Evaluation_V6_Evaluation on line 148!");
+                Console.WriteLine("This is being printed from Evaluation_V6_Evaluation");
                 Environment.Exit(0);
                 return 0;
             }
+            
             Pawn.MovementDirection direction = pawn.direction;
             Coordinate pawnCoord = new Coordinate(pawnSquareIndex);
             // this section offsets the file mask so that instead of it being the whole file, it just keeps the squares infront of the pawn
@@ -148,52 +153,56 @@ public class Evaluation_V6_Advanced : IEvaluation {
             */
             // and for black it'd just select the squares below the pawn
             bool pawnIsEnPassantPawn = pawn == board.CurrentEnPassantPawn;
-            int passedPawnRewardPerRank = 10;
+            
+            int passedPawnRankReward = 10;
+            int hostileBlockerPenalty = 5;
+            
             int totalRewardForPassedPawn = 0;
-            int hostilePieceBlockingPassedPawnPenalty = 5;
             int totalPenaltyForHostileBlocker = 0;
+            
             if (direction == Pawn.MovementDirection.MovingUpwards) {
                 int rankToShiftTo = pawnIsEnPassantPawn ? pawnCoord.y : pawnCoord.y + 1;
                 surroundingFilesMask <<= rankToShiftTo * Board.Dimensions;
 
                 // if the pawn is moving upwards and is on a higher rank, the higher the reward is
-                totalRewardForPassedPawn = passedPawnRewardPerRank * (pawnCoord.y + 1);
+                totalRewardForPassedPawn = passedPawnRankReward * (pawnCoord.y + 1);
                 
                 // if the pawn is moving upwards and is on a higher rank, the more valuable the passed pawn is
-                totalPenaltyForHostileBlocker = hostilePieceBlockingPassedPawnPenalty * (pawnCoord.y + 1);
+                totalPenaltyForHostileBlocker = hostileBlockerPenalty * (pawnCoord.y + 1);
             }
             else if (direction == Pawn.MovementDirection.MovingDownwards) {
                 int rankToShiftTo = pawnIsEnPassantPawn ? Board.Dimensions - (pawnCoord.y + 1) : Board.Dimensions - pawnCoord.y;
-                surroundingFilesMask <<= rankToShiftTo * Board.Dimensions;
+                surroundingFilesMask >>= rankToShiftTo * Board.Dimensions;
                 
                 // if the pawn is moving downwards and is on a lower rank, the higher the reward is
-                totalRewardForPassedPawn = passedPawnRewardPerRank * (7 - pawnCoord.y + 1);
+                totalRewardForPassedPawn = passedPawnRankReward * (7 - (pawnCoord.y + 1));
                 
                 // if the pawn is moving downwards and is on a lower rank, the more valuable the passed pawn is
-                totalPenaltyForHostileBlocker = hostilePieceBlockingPassedPawnPenalty * (7 - pawnCoord.y + 1);
+                totalPenaltyForHostileBlocker = hostileBlockerPenalty * (7 - (pawnCoord.y + 1));
             }
+            
             // checking whether there are any opponent pawns in the mask since that would mean the pawn isn't a passed pawn
             if (BitboardHelper.BitboardContainsAnyFromMask(surroundingFilesMask, opponentPawnBitboard)) {
-                continue;
-            }
-            // no opponent pawns in the surrounding file mask so can give the position a reward
-            score += totalRewardForPassedPawn;
+                // no opponent pawns in the surrounding file mask so can give the position a reward
+                score += totalRewardForPassedPawn;
 
-            // checking if there's any hostile pieces infront of a passed pawn
-            ulong fileBitboardInfrontOfPawn = surroundingFilesMask & fileMask;
-            bool otherOpponentPiecesOnFile = BitboardHelper.BitboardContainsAnyFromMask(fileBitboardInfrontOfPawn, opponentBitboardWithoutPawns);
-            // this section might make the engine think that simply putting a teams piece infront of the pawn is more beneficial
-            // so maybe change this to check whether the pawn is protected? I'm not sure about this yet though
-            if (otherOpponentPiecesOnFile) {
-                score -= totalPenaltyForHostileBlocker;
+                // checking if there's any hostile pieces infront of a passed pawn
+                ulong fileBitboardInfrontOfPawn = surroundingFilesMask & fileMasks[fileIndex];
+                bool otherOpponentPiecesOnFile = (fileBitboardInfrontOfPawn & opponentBitboardWithoutPawns) != 0;
+
+                if (otherOpponentPiecesOnFile) {
+                    score -= totalPenaltyForHostileBlocker;
+                }
             }
         }
+        
         return score;
     }
     
     private int GetBishopScore(ulong teamBishopBitboard, ulong allPawnsBitboard, int bishopCount) {
         int score = 0;
         score += bishopCount >= 2 ? 50 : 0;
+        
         int pawnOnAdjacentSquarePenalty = 20;
         ulong diagonalSquareMask = 0;
         ulong bishopBitboardCopy = teamBishopBitboard;
